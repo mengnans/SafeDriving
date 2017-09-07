@@ -1,0 +1,13 @@
+<resources>
+
+    <string name="app_name">SafeDriving</string>
+    <string name="add_textbox_hint">Add a ToDo item</string>
+    <string name="add_button_text">Add</string>
+    <string name="service_title">Mobile Apps </string>
+    <string name="menu_refresh">Refresh</string>
+    <string name="checkbox_text">Item Text</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="speed_is_0_km_h">Speed is 0 km/h</string>
+    <string name="button">Get Speed</string>
+
+</resources>
