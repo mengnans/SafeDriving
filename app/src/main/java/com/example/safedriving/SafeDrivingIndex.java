@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class SafeDrivingIndex extends AppCompatActivity {
+
     private LinearLayout dashboardLinearLayout;
     private LinearLayout homeLinearLayout;
     private final static int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 200;
