@@ -8,27 +8,55 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.app.Activity;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
-public class MainActivity extends Activity {
-
+public class SafeDrivingIndex extends AppCompatActivity {
+    private LinearLayout dashboardLinearLayout;
+    private LinearLayout homeLinearLayout;
     private final static int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 200;
 
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+            = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            hideAll();
+            switch (item.getItemId()) {
+
+                case R.id.navigation_home:
+                    homeLinearLayout.setVisibility(LinearLayout.VISIBLE);
+                    return true;
+                case R.id.navigation_dashboard:
+                    showDashBoard();
+                    return true;
+                case R.id.navigation_notifications:
+                    dashboardLinearLayout.setVisibility(LinearLayout.GONE);
+                    return true;
+            }
+            return false;
+        }
+    };
+
+    private void hideAll() {
+        dashboardLinearLayout.setVisibility(LinearLayout.GONE);
+        homeLinearLayout.setVisibility(LinearLayout.GONE);
+    }
+
+    private void showDashBoard(){
+        dashboardLinearLayout.setVisibility(LinearLayout.VISIBLE);
         final Button getSpeedButton = (Button) this.findViewById(R.id.button8);
-        final TextView speedView = (TextView) this.findViewById(R.id.textView);
+        final TextView speedView = (TextView) this.findViewById(R.id.textView_dashboard);
         getSpeedButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 getSpeed(speedView);
@@ -36,6 +64,19 @@ public class MainActivity extends Activity {
                         Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_safe_driving_index);
+        dashboardLinearLayout = (LinearLayout) this.findViewById(R.id.dashboard_linear_layout);
+        homeLinearLayout = (LinearLayout) this.findViewById(R.id.home_linear_layout);
+        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
     }
 
 
@@ -52,21 +93,21 @@ public class MainActivity extends Activity {
                     @Override
                     public void onLocationChanged(Location pCurrentLocation) {
                         double speed = 0;
-                        Log.i("Stone","longitude: "+pCurrentLocation.getLongitude());
-                        Log.i("Stone","latitude: "+pCurrentLocation.getLatitude());
-                        Toast.makeText(getApplicationContext(),"" + pCurrentLocation.getLongitude() + ", " + pCurrentLocation.getLatitude() ,Toast.LENGTH_SHORT).show();
-                        if (this.mLastLocation != null){
-                            speed = 1000 * getDistance(mLastLocation,pCurrentLocation)
+                        Log.i("Stone", "longitude: " + pCurrentLocation.getLongitude());
+                        Log.i("Stone", "latitude: " + pCurrentLocation.getLatitude());
+                        Toast.makeText(getApplicationContext(), "" + pCurrentLocation.getLongitude() + ", " + pCurrentLocation.getLatitude(), Toast.LENGTH_SHORT).show();
+                        if (this.mLastLocation != null) {
+                            speed = 1000 * getDistance(mLastLocation, pCurrentLocation)
                                     / (pCurrentLocation.getTime() - this.mLastLocation.getTime());
-                            Log.i("Stone","distance " + getDistance(mLastLocation,pCurrentLocation));
-                            Log.i("Stone","time " + (pCurrentLocation.getTime() - this.mLastLocation.getTime()));
+                            Log.i("Stone", "distance " + getDistance(mLastLocation, pCurrentLocation));
+                            Log.i("Stone", "time " + (pCurrentLocation.getTime() - this.mLastLocation.getTime()));
                             // from meter per second to km per hour
                             speed *= 3.6;
                         }
                         if (pCurrentLocation.hasSpeed())
                             speed = pCurrentLocation.getSpeed();
                         this.mLastLocation = pCurrentLocation;
-                        speedView.setText("Speed is " + speed +"km/h");
+                        speedView.setText("Speed is " + speed + "km/h");
                     }
 
                     @Override
@@ -83,6 +124,7 @@ public class MainActivity extends Activity {
                     public void onProviderDisabled(String s) {
 
                     }
+
                     /**
                      * Calculate distance between two points in latitude and longitude taking
                      * into account height difference. If you are not interested in height
@@ -93,7 +135,7 @@ public class MainActivity extends Activity {
                      * @returns Distance in Meters
                      */
                     private double getDistance(Location mLastLocation, Location pCurrentLocation) {
-                        if(mLastLocation == null || pCurrentLocation == null){
+                        if (mLastLocation == null || pCurrentLocation == null) {
                             return 0;
                         }
                         double lat1 = mLastLocation.getLatitude();
@@ -132,5 +174,5 @@ public class MainActivity extends Activity {
                 0, locationListener);
 
     }
-}
 
+}

@@ -9,5 +9,9 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="speed_is_0_km_h">Speed is 0 km/h</string>
     <string name="button">Get Speed</string>
+    <string name="title_activity_safe_driving_index">SafeDrivingIndex</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
 
 </resources>
