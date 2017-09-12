@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ListPreference
+        android:defaultValue="@string/pref_km_per_hour_value"
+        android:entries="@array/pref_unit_of_measurement_option_labels"
+        android:entryValues="@array/pref_unit_of_measurement_option_values"
+        android:key="@string/pref_unit_of_measurement_key"
+        android:title="@string/pref_unit_of_measurement_label" />
+
+</PreferenceScreen>

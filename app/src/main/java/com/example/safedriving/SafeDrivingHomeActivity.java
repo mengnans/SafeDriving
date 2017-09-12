@@ -2,6 +2,8 @@ package com.example.safedriving;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -12,7 +14,10 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -22,16 +27,15 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.SupportMapFragment;
 
-public class SafeDrivingIndex extends AppCompatActivity {
+public class SafeDrivingHomeActivity extends AppCompatActivity {
 
     private LinearLayout dashboardLinearLayout;
     private LinearLayout homeLinearLayout;
     private final static int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 200;
+    private  SharedPreferences sharedPreferences;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
-
-
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             hideAll();
@@ -82,8 +86,31 @@ public class SafeDrivingIndex extends AppCompatActivity {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(new MapsActivity());
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        /* Use AppCompatActivity's method getMenuInflater to get a handle on the menu inflater */
+        MenuInflater inflater = getMenuInflater();
+        /* Use the inflater's inflate method to inflate our visualizer_menu layout to this menu */
+        inflater.inflate(R.menu.visualizer_menu, menu);
+        /* Return true so that the visualizer_menu is displayed in the Toolbar */
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            Intent startSettingsActivity = new Intent(this, SettingsActivity.class);
+            startActivity(startSettingsActivity);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 
 
     private void getSpeed(final TextView speedView) {
@@ -102,18 +129,24 @@ public class SafeDrivingIndex extends AppCompatActivity {
                         Log.i("Stone", "longitude: " + pCurrentLocation.getLongitude());
                         Log.i("Stone", "latitude: " + pCurrentLocation.getLatitude());
                         Toast.makeText(getApplicationContext(), "" + pCurrentLocation.getLongitude() + ", " + pCurrentLocation.getLatitude(), Toast.LENGTH_SHORT).show();
+                        String unit_of_measurement = sharedPreferences.getString(getString(R.string.pref_unit_of_measurement_key),
+                                getString(R.string.pref_unit_of_measurement_default_value));
                         if (this.mLastLocation != null) {
                             speed = 1000 * getDistance(mLastLocation, pCurrentLocation)
                                     / (pCurrentLocation.getTime() - this.mLastLocation.getTime());
                             Log.i("Stone", "distance " + getDistance(mLastLocation, pCurrentLocation));
                             Log.i("Stone", "time " + (pCurrentLocation.getTime() - this.mLastLocation.getTime()));
                             // from meter per second to km per hour
-                            speed *= 3.6;
+                            if(getString(R.string.pref_km_per_hour_value).equals(unit_of_measurement)){
+                                speed *= 3.6;
+                            }
                         }
                         if (pCurrentLocation.hasSpeed())
                             speed = pCurrentLocation.getSpeed();
                         this.mLastLocation = pCurrentLocation;
-                        speedView.setText("Speed is " + speed + "km/h");
+
+
+                        speedView.setText("Speed is " + speed + unit_of_measurement);
                     }
 
                     @Override
