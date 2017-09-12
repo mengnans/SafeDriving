@@ -20,6 +20,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.SupportMapFragment;
+
 public class SafeDrivingIndex extends AppCompatActivity {
 
     private LinearLayout dashboardLinearLayout;
@@ -77,6 +79,9 @@ public class SafeDrivingIndex extends AppCompatActivity {
         homeLinearLayout = (LinearLayout) this.findViewById(R.id.home_linear_layout);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(new MapsActivity());
 
     }
 
