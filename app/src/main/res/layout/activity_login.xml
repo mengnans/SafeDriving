@@ -35,4 +35,13 @@
         tools:layout_editor_absoluteX="16dp"
         tools:layout_editor_absoluteY="159dp"
         android:onClick="onClickLogin"/>
+
+    <Button
+        android:id="@+id/gotoMainActivityButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="goto main activity"
+        android:onClick="onClickGotoMainActivity"/>
+
+
 </LinearLayout>
