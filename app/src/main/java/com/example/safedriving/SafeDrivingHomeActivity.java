@@ -1,6 +1,7 @@
 package com.example.safedriving;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,13 +27,30 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.SupportMapFragment;
+import com.microsoft.windowsazure.mobileservices.MobileServiceActivityResult;
+import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
+import com.microsoft.windowsazure.mobileservices.http.OkHttpClientFactory;
+import com.squareup.okhttp.OkHttpClient;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import com.microsoft.windowsazure.mobileservices.authentication.MobileServiceAuthenticationProvider;
+import com.microsoft.windowsazure.mobileservices.authentication.MobileServiceUser;
+
+import java.net.MalformedURLException;
+import java.util.concurrent.TimeUnit;
 
 public class SafeDrivingHomeActivity extends AppCompatActivity {
 
     private LinearLayout dashboardLinearLayout;
     private LinearLayout homeLinearLayout;
     private final static int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 200;
-    private  SharedPreferences sharedPreferences;
+    private SharedPreferences sharedPreferences;
+
+    private MobileServiceClient mClient;
+    public static final int GOOGLE_LOGIN_REQUEST_CODE = 1;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -60,7 +78,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         homeLinearLayout.setVisibility(LinearLayout.GONE);
     }
 
-    private void showDashBoard(){
+    private void showDashBoard() {
         dashboardLinearLayout.setVisibility(LinearLayout.VISIBLE);
         final Button getSpeedButton = (Button) this.findViewById(R.id.button8);
         final TextView speedView = (TextView) this.findViewById(R.id.textView_dashboard);
@@ -79,6 +97,38 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_safe_driving_index);
+
+
+        try {
+            // Create the Mobile Service Client instance, using the provided
+
+            // Mobile Service URL and key
+            mClient = new MobileServiceClient(
+                    "https://safedriving.azurewebsites.net",
+                    this);
+
+            // Extend timeout from default of 10s to 20s
+            mClient.setAndroidHttpClientFactory(new OkHttpClientFactory() {
+                @Override
+                public OkHttpClient createOkHttpClient() {
+                    OkHttpClient client = new OkHttpClient();
+                    client.setReadTimeout(20, TimeUnit.SECONDS);
+                    client.setWriteTimeout(20, TimeUnit.SECONDS);
+                    return client;
+                }
+            });
+
+            authenticate();
+
+        } catch (MalformedURLException e) {
+            createAndShowDialog(new Exception("There was an error creating the Mobile Service. Verify the URL"), "Error");
+        } catch (Exception e) {
+            createAndShowDialog(e, "Error");
+        }
+
+    }
+
+    public void showContent() {
         dashboardLinearLayout = (LinearLayout) this.findViewById(R.id.dashboard_linear_layout);
         homeLinearLayout = (LinearLayout) this.findViewById(R.id.home_linear_layout);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
@@ -87,7 +137,6 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(new MapsActivity());
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
     }
 
     @Override
@@ -110,7 +159,6 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
 
 
     private void getSpeed(final TextView speedView) {
@@ -137,7 +185,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                             Log.i("Stone", "distance " + getDistance(mLastLocation, pCurrentLocation));
                             Log.i("Stone", "time " + (pCurrentLocation.getTime() - this.mLastLocation.getTime()));
                             // from meter per second to km per hour
-                            if(getString(R.string.pref_km_per_hour_value).equals(unit_of_measurement)){
+                            if (getString(R.string.pref_km_per_hour_value).equals(unit_of_measurement)) {
                                 speed *= 3.6;
                             }
                         }
@@ -214,4 +262,47 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
     }
 
+    private void createAndShowDialog(Exception exception, String title) {
+        Throwable ex = exception;
+        if (exception.getCause() != null) {
+            ex = exception.getCause();
+        }
+        createAndShowDialog(ex.getMessage(), title);
+    }
+
+    private void createAndShowDialog(final String message, final String title) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setMessage(message);
+        builder.setTitle(title);
+        builder.create().show();
+    }
+
+    private void authenticate() {
+        // Login using the Google provider.
+        mClient.login("Google", "safedriving", GOOGLE_LOGIN_REQUEST_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // When request completes
+        if (resultCode == RESULT_OK) {
+            // Check the request code matches the one we send in the login request
+            if (requestCode == GOOGLE_LOGIN_REQUEST_CODE) {
+                MobileServiceActivityResult result = mClient.onActivityResult(data);
+                if (result.isLoggedIn()) {
+                    // login succeeded
+                    createAndShowDialog(String.format("You are now logged in - %1$2s", mClient.getCurrentUser().getUserId()), "Success");
+                    showContent();
+
+                } else {
+                    // login failed, check the error message
+                    String errorMessage = result.getErrorMessage();
+                    createAndShowDialog(errorMessage, "Error");
+                }
+            }
+        }
+
+
+    }
 }
