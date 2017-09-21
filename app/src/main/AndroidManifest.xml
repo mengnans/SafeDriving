@@ -24,11 +24,7 @@
             android:name=".SafeDrivingHomeActivity"
             android:label="@string/title_activity_safe_driving_index"
             android:theme="@style/Theme.AppCompat">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -44,8 +40,16 @@
 
         <activity
             android:name=".SettingsActivity"
-            android:parentActivityName=".SafeDrivingHomeActivity"></activity>
-        <activity android:name=".LoginActivity"></activity>
+            android:parentActivityName=".SafeDrivingHomeActivity">
+        </activity>
+        <activity
+            android:name=".LoginActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
