@@ -33,6 +33,12 @@ public class UserDataItem {
     @com.google.gson.annotations.SerializedName("mStreet")
     private String mStreet;
 
+    @com.google.gson.annotations.SerializedName("mSpeed")
+    private double mSpeed;
+
+    @com.google.gson.annotations.SerializedName("mLimit")
+    private double mLimit;
+
     /**
      * ToDoItem constructor
      */
@@ -53,26 +59,30 @@ public class UserDataItem {
      * @param id
      *            The item id
      */
-    public UserDataItem(String text, String id, double latitude, double longitude, String mStreet) {
+    public UserDataItem(String text, String id, double latitude, double longitude, String mStreet, double speed, double mLimit) {
         this.setText(text);
         this.setId(id);
         this.setLat(latitude);
         this.setLong(longitude);
         this.setmStreet(mStreet);
+        this.setSpeed(speed);
+        this.setLimit(mLimit);
     }
+
+    public double getSpeed() { return mSpeed; }
+    public double getLimit() { return mLimit; }
+    public void setSpeed(double speed) { mSpeed = speed; }
+    public void setLimit(double limit) { mLimit = limit; }
 
     public double getLat(){
         return mLat;
     }
-
     public double getLong(){
         return mLong;
     }
-
     public void setLat(double lat) {
         mLat = lat;
     }
-
     public void setLong(double longitude) {
         mLong = longitude;
     }
