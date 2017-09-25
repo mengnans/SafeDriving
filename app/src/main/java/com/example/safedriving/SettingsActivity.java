@@ -9,7 +9,7 @@ import android.view.MenuItem;
 import com.example.safedriving.R;
 
 public class SettingsActivity extends AppCompatActivity {
-
+    //stanley is here
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
