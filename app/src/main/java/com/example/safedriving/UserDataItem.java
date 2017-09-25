@@ -26,18 +26,26 @@ public class UserDataItem {
 
     @com.google.gson.annotations.SerializedName("latitude")
     private double mLat;
+    @com.google.gson.annotations.SerializedName("latitudeStr")
+    private String mLatString;
 
     @com.google.gson.annotations.SerializedName("longitude")
     private double mLong;
+    @com.google.gson.annotations.SerializedName("longitudeStr")
+    private String mLongString;
 
     @com.google.gson.annotations.SerializedName("mStreet")
     private String mStreet;
 
     @com.google.gson.annotations.SerializedName("mSpeed")
     private double mSpeed;
+    @com.google.gson.annotations.SerializedName("mSpeedStr")
+    private String mSpeedString;
 
     @com.google.gson.annotations.SerializedName("mLimit")
     private double mLimit;
+    @com.google.gson.annotations.SerializedName("mLimitStr")
+    private String mLimitString;
 
     /**
      * ToDoItem constructor
@@ -70,21 +78,42 @@ public class UserDataItem {
     }
 
     public double getSpeed() { return mSpeed; }
+    public String getmSpeedString() { return mSpeedString; }
+
     public double getLimit() { return mLimit; }
-    public void setSpeed(double speed) { mSpeed = speed; }
-    public void setLimit(double limit) { mLimit = limit; }
+    public String getmLimitString() { return mLimitString; }
+
+    public void setSpeed(double speed) {
+        mSpeed = speed;
+        mLimitString = Double.toString(speed);
+    }
+
+    public void setLimit(double limit) {
+        mLimit = limit;
+        mLimitString = Double.toString(limit);
+    }
 
     public double getLat(){
         return mLat;
     }
+    public String getmLatString() {
+        return mLatString;
+    }
+
     public double getLong(){
         return mLong;
     }
+    public String getmLongString() {
+        return mLongString;
+    }
+
     public void setLat(double lat) {
         mLat = lat;
+        mLatString = Double.toString(lat);
     }
     public void setLong(double longitude) {
         mLong = longitude;
+        mLongString = Double.toString(longitude);
     }
 
     /**
