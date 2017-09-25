@@ -9,6 +9,8 @@ public class TestClass {
 
 //TODO easy way to list userdataitems
 
+    /**
+
     String[] toyNames = ToyBox.getToyNames();
 
         /*
@@ -16,6 +18,10 @@ public class TestClass {
          * the "\n\n\n" after the String is to give visual separation between each String in the
          * TextView. Later, we'll learn about a better way to display lists of data.
          */
+
+    /**
         for (String toyName : toyNames) {
                 mToysListTextView.append(toyName + "\n\n\n");
                 }
+
+                */

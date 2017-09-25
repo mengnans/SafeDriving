@@ -51,10 +51,10 @@ public class UserDataItemAdapter extends ArrayAdapter<UserDataItem> {
 
 
         final CheckBox checkBox = (CheckBox) row.findViewById(R.id.checkToDoItem);
-        checkBox.setText(currentItem.getText());
+        checkBox.setText(currentItem.getText()); //TODO display details of speeding instance
 
         //TODO
-
+        /**
         checkBox.setChecked(false);
         checkBox.setEnabled(true);
 
@@ -71,8 +71,7 @@ public class UserDataItemAdapter extends ArrayAdapter<UserDataItem> {
                 }
             }
         });
-
+        */
         return row;
     }
-
 }

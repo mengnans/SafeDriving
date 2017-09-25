@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -23,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,7 +32,16 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.microsoft.windowsazure.mobileservices.MobileServiceActivityResult;
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 import com.microsoft.windowsazure.mobileservices.http.OkHttpClientFactory;
+import com.microsoft.windowsazure.mobileservices.table.MobileServiceTable;
+import com.microsoft.windowsazure.mobileservices.table.sync.MobileServiceSyncContext;
+import com.microsoft.windowsazure.mobileservices.table.sync.localstore.ColumnDataType;
+import com.microsoft.windowsazure.mobileservices.table.sync.localstore.MobileServiceLocalStoreException;
+import com.microsoft.windowsazure.mobileservices.table.sync.localstore.SQLiteLocalStore;
+import com.microsoft.windowsazure.mobileservices.table.sync.synchandler.SimpleSyncHandler;
 import com.squareup.okhttp.OkHttpClient;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import android.content.Context;
@@ -50,6 +61,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
 
     private MobileServiceClient mClient;
+    private MobileServiceTable<UserDataItem> mToDoTable;
+    private UserDataItemAdapter mAdapter;
     public static final int GOOGLE_LOGIN_REQUEST_CODE = 1;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -117,6 +130,12 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                     return client;
                 }
             });
+
+            mToDoTable = mClient.getTable(UserDataItem.class);
+            initLocalStore().get();
+            mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
+            ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
+            listViewToDo.setAdapter(mAdapter);
 
             authenticate();
 
@@ -302,7 +321,108 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 }
             }
         }
-
-
     }
+
+    //part of setting up database interactions
+    private AsyncTask<Void, Void, Void> initLocalStore() throws MobileServiceLocalStoreException, ExecutionException, InterruptedException {
+
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+
+                    MobileServiceSyncContext syncContext = mClient.getSyncContext();
+
+                    if (syncContext.isInitialized())
+                        return null;
+
+                    SQLiteLocalStore localStore = new SQLiteLocalStore(mClient.getContext(), "OfflineStore", null, 1);
+
+                    Map<String, ColumnDataType> tableDefinition = new HashMap<String, ColumnDataType>();
+                    //TODO create table columns
+                    //tableDefinition.put("id", ColumnDataType.String);
+                    //tableDefinition.put("text", ColumnDataType.String);
+                    //tableDefinition.put("complete", ColumnDataType.Boolean);
+
+                    localStore.defineTable("userdata", tableDefinition);
+
+                    SimpleSyncHandler handler = new SimpleSyncHandler();
+
+                    syncContext.initialize(localStore, handler).get();
+
+                } catch (final Exception e) {
+                    createAndShowDialogFromTask(e, "Error");
+                }
+
+                return null;
+            }
+        };
+
+        return runAsyncTask(task);
+    }
+
+    //is called from initLocalStore()
+    private void createAndShowDialogFromTask(final Exception exception, String title) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                createAndShowDialog(exception, "Error");
+            }
+        });
+    }
+
+    //is called from initLocalStore()
+    private AsyncTask<Void, Void, Void> runAsyncTask(AsyncTask<Void, Void, Void> task) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            return task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } else {
+            return task.execute();
+        }
+    }
+
+    //add userdata to database
+    public void addItem(View view) {
+        if (mClient == null) {
+            return;
+        }
+
+        // Create a new item
+        final UserDataItem item = new UserDataItem();
+
+        //item.setText(mTextNewToDo.getText().toString());
+        //item.setComplete(false);
+
+        // Insert the new item
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>(){
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    final UserDataItem entity = addItemInTable(item);
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //if(!entity.isComplete()){
+                                mAdapter.add(entity);
+                            //}
+                        }
+                    });
+                } catch (final Exception e) {
+                    createAndShowDialogFromTask(e, "Error");
+                }
+                return null;
+            }
+        };
+
+        runAsyncTask(task);
+
+        //mTextNewToDo.setText("");
+    }
+
+    //add userdata to database
+    public UserDataItem addItemInTable(UserDataItem item) throws ExecutionException, InterruptedException {
+        UserDataItem entity = mToDoTable.insert(item).get();
+        return entity;
+    }
+
 }
