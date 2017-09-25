@@ -86,12 +86,16 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * hide all other components
+     */
     private void hideAll() {
         dashboardLinearLayout.setVisibility(LinearLayout.GONE);
         homeLinearLayout.setVisibility(LinearLayout.GONE);
     }
 
     private void showDashBoard() {
+
         dashboardLinearLayout.setVisibility(LinearLayout.VISIBLE);
         final Button getSpeedButton = (Button) this.findViewById(R.id.button8);
         final TextView speedView = (TextView) this.findViewById(R.id.textView_dashboard);
@@ -110,6 +114,13 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_safe_driving_index);
+
+        dashboardLinearLayout = (LinearLayout) this.findViewById(R.id.dashboard_linear_layout);
+        homeLinearLayout = (LinearLayout) this.findViewById(R.id.home_linear_layout);
+        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+//        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+//                .findFragmentById(R.id.map);
 
 
         try {
@@ -131,13 +142,13 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 }
             });
 
-            mToDoTable = mClient.getTable(UserDataItem.class);
-            initLocalStore().get();
-            mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
-            ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
-            listViewToDo.setAdapter(mAdapter);
+//            mToDoTable = mClient.getTable(UserDataItem.class);
+//            initLocalStore().get();
+//            mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
+//            ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
+//            listViewToDo.setAdapter(mAdapter);
 
-            authenticate();
+//            authenticate();
 
         } catch (MalformedURLException e) {
             createAndShowDialog(new Exception("There was an error creating the Mobile Service. Verify the URL"), "Error");
@@ -195,21 +206,26 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                         double speed = 0;
                         Log.i("Stone", "longitude: " + pCurrentLocation.getLongitude());
                         Log.i("Stone", "latitude: " + pCurrentLocation.getLatitude());
+
                         Toast.makeText(getApplicationContext(), "" + pCurrentLocation.getLongitude() + ", " + pCurrentLocation.getLatitude(), Toast.LENGTH_SHORT).show();
+
                         String unit_of_measurement = sharedPreferences.getString(getString(R.string.pref_unit_of_measurement_key),
                                 getString(R.string.pref_unit_of_measurement_default_value));
-                        if (this.mLastLocation != null) {
-                            speed = 1000 * getDistance(mLastLocation, pCurrentLocation)
-                                    / (pCurrentLocation.getTime() - this.mLastLocation.getTime());
-                            Log.i("Stone", "distance " + getDistance(mLastLocation, pCurrentLocation));
-                            Log.i("Stone", "time " + (pCurrentLocation.getTime() - this.mLastLocation.getTime()));
-                            // from meter per second to km per hour
-                            if (getString(R.string.pref_km_per_hour_value).equals(unit_of_measurement)) {
-                                speed *= 3.6;
-                            }
-                        }
-                        if (pCurrentLocation.hasSpeed())
+
+                        /**if it has speed*/
+                        if (pCurrentLocation.hasSpeed()){
                             speed = pCurrentLocation.getSpeed();
+                        }
+                        /**if we have previous location, then calculate the speed */
+                        else if (this.mLastLocation != null) {
+                            speed =  pCurrentLocation.distanceTo(mLastLocation) / (pCurrentLocation.getTime() - this.mLastLocation.getTime());
+                        }
+
+                        // from meter per second to km per hour
+                        if (getString(R.string.pref_km_per_hour_value).equals(unit_of_measurement)) {
+                            speed *= 3.6;
+                        }
+
                         this.mLastLocation = pCurrentLocation;
 
 
