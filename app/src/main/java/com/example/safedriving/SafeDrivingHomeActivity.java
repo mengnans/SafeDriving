@@ -28,6 +28,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.microsoft.windowsazure.mobileservices.MobileServiceActivityResult;
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
@@ -54,6 +63,10 @@ import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
 
 public class SafeDrivingHomeActivity extends AppCompatActivity {
+
+    private static final String LOG_TAG = SafeDrivingHomeActivity.class.getSimpleName();
+
+    private final static MapsActivity mapsActivity = new MapsActivity();
 
     private LinearLayout dashboardLinearLayout;
     private LinearLayout homeLinearLayout;
@@ -119,8 +132,30 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         homeLinearLayout = (LinearLayout) this.findViewById(R.id.home_linear_layout);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-//        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-//                .findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+
+        mapFragment.getMapAsync(mapsActivity);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+
+        startRouting();
+
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                mapsActivity.setNewPlaceMarker(place);
+                Log.i(LOG_TAG, "Place: " + place.getName());
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.i(LOG_TAG, "An error occurred: " + status);
+            }
+        });
 
 
         try {
@@ -159,14 +194,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     }
 
     public void showContent() {
-        dashboardLinearLayout = (LinearLayout) this.findViewById(R.id.dashboard_linear_layout);
-        homeLinearLayout = (LinearLayout) this.findViewById(R.id.home_linear_layout);
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(new MapsActivity());
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
     }
 
     @Override
@@ -328,7 +356,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 if (result.isLoggedIn()) {
                     // login succeeded
                     createAndShowDialog(String.format("You are now logged in - %1$2s", mClient.getCurrentUser().getUserId()), "Success");
-                    showContent();
+//                    showContent();
 
                 } else {
                     // login failed, check the error message
@@ -439,6 +467,29 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     public UserDataItem addItemInTable(UserDataItem item) throws ExecutionException, InterruptedException {
         UserDataItem entity = mToDoTable.insert(item).get();
         return entity;
+    }
+
+    public void startRouting(){
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url ="http://www.google.com";
+
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(com.android.volley.Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        Log.i(LOG_TAG, "Response is: "+ response.substring(0,500));
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i(LOG_TAG, "No Response");
+            }
+        });
+// Add the request to the RequestQueue.
+        queue.add(stringRequest);
     }
 
 }
