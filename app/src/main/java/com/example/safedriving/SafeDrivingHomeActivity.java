@@ -24,7 +24,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,12 +51,6 @@ import com.squareup.okhttp.OkHttpClient;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import com.microsoft.windowsazure.mobileservices.authentication.MobileServiceAuthenticationProvider;
-import com.microsoft.windowsazure.mobileservices.authentication.MobileServiceUser;
 
 import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
@@ -77,6 +70,9 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     private MobileServiceTable<UserDataItem> mToDoTable;
     private UserDataItemAdapter mAdapter;
     public static final int GOOGLE_LOGIN_REQUEST_CODE = 1;
+    private Location latestPosition;
+    private Place destinationPlace;
+
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -86,7 +82,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             switch (item.getItemId()) {
 
                 case R.id.navigation_home:
-                    homeLinearLayout.setVisibility(LinearLayout.VISIBLE);
+                    showMap();
                     return true;
                 case R.id.navigation_dashboard:
                     showDashBoard();
@@ -107,8 +103,13 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         homeLinearLayout.setVisibility(LinearLayout.GONE);
     }
 
-    private void showDashBoard() {
+    private void showMap() {
+        hideAll();
+        homeLinearLayout.setVisibility(LinearLayout.VISIBLE);
+    }
 
+    private void showDashBoard() {
+        hideAll();
         dashboardLinearLayout.setVisibility(LinearLayout.VISIBLE);
         final Button getSpeedButton = (Button) this.findViewById(R.id.button8);
         final TextView speedView = (TextView) this.findViewById(R.id.textView_dashboard);
@@ -141,18 +142,19 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
-        startRouting();
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                mapsActivity.setNewPlaceMarker(place);
+                mapsActivity.setDestionationPlaceMarker(place);
+                destinationPlace = place;
                 Log.i(LOG_TAG, "Place: " + place.getName());
+
             }
 
             @Override
             public void onError(Status status) {
-                // TODO: Handle the error.
+                Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_SHORT).show();
                 Log.i(LOG_TAG, "An error occurred: " + status);
             }
         });
@@ -225,36 +227,51 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 .getSystemService(Context.LOCATION_SERVICE);
         // Define a listener that responds to location updates
 
+
         LocationListener locationListener =
                 new LocationListener() {
-                    private Location mLastLocation = null;
+                    boolean hasRoute = false;
 
                     @Override
-                    public void onLocationChanged(Location pCurrentLocation) {
-                        double speed = 0;
-                        Log.i("Stone", "longitude: " + pCurrentLocation.getLongitude());
-                        Log.i("Stone", "latitude: " + pCurrentLocation.getLatitude());
+                    public void onLocationChanged(Location newLocation) {
 
-                        Toast.makeText(getApplicationContext(), "" + pCurrentLocation.getLongitude() + ", " + pCurrentLocation.getLatitude(), Toast.LENGTH_SHORT).show();
+
+                        /**calculate the speed*/
+                        double speed = 0;
+                        Log.i("Stone", "longitude: " + newLocation.getLongitude());
+                        Log.i("Stone", "latitude: " + newLocation.getLatitude());
+
+                        Toast.makeText(getApplicationContext(), "" + newLocation.getLongitude() + ", " + newLocation.getLatitude(), Toast.LENGTH_SHORT).show();
 
                         String unit_of_measurement = sharedPreferences.getString(getString(R.string.pref_unit_of_measurement_key),
                                 getString(R.string.pref_unit_of_measurement_default_value));
 
                         /**if it has speed*/
-                        if (pCurrentLocation.hasSpeed()){
-                            speed = pCurrentLocation.getSpeed();
+                        if (newLocation.hasSpeed()) {
+                            speed = newLocation.getSpeed();
                         }
                         /**if we have previous location, then calculate the speed */
-                        else if (this.mLastLocation != null) {
-                            speed =  pCurrentLocation.distanceTo(mLastLocation) / (pCurrentLocation.getTime() - this.mLastLocation.getTime());
+                        else if (latestPosition != null) {
+                            speed = newLocation.distanceTo(latestPosition) / (newLocation.getTime() - latestPosition.getTime());
                         }
 
-                        // from meter per second to km per hour
+                        /** from meter per second to km per hour */
                         if (getString(R.string.pref_km_per_hour_value).equals(unit_of_measurement)) {
                             speed *= 3.6;
                         }
 
-                        this.mLastLocation = pCurrentLocation;
+                        /**save the latest position*/
+                        latestPosition = newLocation;
+
+                        /** set the location on map*/
+                        mapsActivity.setCurrentPositionMaker(latestPosition);
+
+                        /** set the route on map for the first time*/
+                        if (!hasRoute) {
+                            startRouting();
+                            hasRoute = true;
+                        }
+
 
 
                         speedView.setText("Speed is " + speed + unit_of_measurement);
@@ -274,45 +291,9 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                     public void onProviderDisabled(String s) {
 
                     }
-
-                    /**
-                     * Calculate distance between two points in latitude and longitude taking
-                     * into account height difference. If you are not interested in height
-                     * difference pass 0.0. Uses Haversine method as its base.
-                     *
-                     * lat1, lon1 Start point lat2, lon2 End point el1 Start altitude in meters
-                     * el2 End altitude in meters
-                     * @returns Distance in Meters
-                     */
-                    private double getDistance(Location mLastLocation, Location pCurrentLocation) {
-                        if (mLastLocation == null || pCurrentLocation == null) {
-                            return 0;
-                        }
-                        double lat1 = mLastLocation.getLatitude();
-                        double lat2 = pCurrentLocation.getLatitude();
-                        double lon1 = mLastLocation.getLongitude();
-                        double lon2 = pCurrentLocation.getLongitude();
-                        double el1 = mLastLocation.getAltitude();
-                        double el2 = pCurrentLocation.getAltitude();
-
-                        final int R = 6371; // Radius of the earth
-
-                        double latDistance = Math.toRadians(lat2 - lat1);
-                        double lonDistance = Math.toRadians(lon2 - lon1);
-                        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-                        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                        double distance = R * c * 1000; // convert to meters
-
-                        double height = el1 - el2;
-
-                        distance = Math.pow(distance, 2) + Math.pow(height, 2);
-
-                        return Math.sqrt(distance);
-                    }
                 };
 
+        /**get the permission*/
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             while (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
@@ -322,6 +303,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,
                 0, locationListener);
+
 
     }
 
@@ -437,7 +419,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         //item.setComplete(false);
 
         // Insert the new item
-        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>(){
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 try {
@@ -447,7 +429,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             //if(!entity.isComplete()){
-                                mAdapter.add(entity);
+                            mAdapter.add(entity);
                             //}
                         }
                     });
@@ -469,18 +451,23 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         return entity;
     }
 
-    public void startRouting(){
+    public void startRouting() {
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://www.google.com";
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=";
+        url += "" + latestPosition.getLatitude();
+        url += "," + latestPosition.getLongitude() + "&destination=";
+        url += destinationPlace.getName() + "&key=" + getString(R.string.google_maps_key);
+//        url += "melbourne" + "&key=" + getString(R.string.google_maps_key);
+        Log.i(LOG_TAG, "" + url);
 
         // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(com.android.volley.Request.Method.GET, url,
+        StringRequest stringRequest = new StringRequest(com.android.volley.Request.Method.POST, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        Log.i(LOG_TAG, "Response is: "+ response.substring(0,500));
+                        mapsActivity.drawPolyline(response);
+                        showMap();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -488,8 +475,9 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 Log.i(LOG_TAG, "No Response");
             }
         });
-// Add the request to the RequestQueue.
+        // Add the request to the RequestQueue.
         queue.add(stringRequest);
     }
+
 
 }
