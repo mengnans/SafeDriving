@@ -1,9 +1,11 @@
 apply plugin: 'com.android.application'
+
+
 android {
     compileSdkVersion 25
     buildToolsVersion '25.0.0'
     defaultConfig {
-        applicationId "com.example.zumoappname"
+        applicationId "com.example.safedriving"
         minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
@@ -45,5 +47,12 @@ dependencies {
     compile 'com.microsoft.azure:azure-mobile-android:3.2.0@aar'
     compile 'com.microsoft.azure:azure-notifications-handler:1.0.1@jar'
     compile 'com.android.support:customtabs:25.3.1'
+    compile 'com.google.android.gms:play-services-auth:10.0.1'
+
+
 }
+
+apply plugin: 'com.google.gms.google-services'
+
+
 

@@ -27,6 +27,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.microsoft.windowsazure.mobileservices.MobileServiceActivityResult;
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 import com.microsoft.windowsazure.mobileservices.http.OkHttpClientFactory;
@@ -41,6 +44,9 @@ import com.microsoft.windowsazure.mobileservices.authentication.MobileServiceUse
 
 import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 
 public class SafeDrivingHomeActivity extends AppCompatActivity {
 
@@ -48,9 +54,13 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     private LinearLayout homeLinearLayout;
     private final static int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 200;
     private SharedPreferences sharedPreferences;
+    public static final String SHAREDPREFFILE = "temp";
+    public static final String USERIDPREF = "uid";
+    public static final String TOKENPREF = "tkn";
 
     private MobileServiceClient mClient;
     public static final int GOOGLE_LOGIN_REQUEST_CODE = 1;
+
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -97,6 +107,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_safe_driving_index);
+        Intent i = new Intent(getApplicationContext(),SignInActivity.class);
+        startActivity(i);
 
 
         try {
@@ -118,7 +130,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 }
             });
 
-            authenticate();
+            showContent();
+
 
         } catch (MalformedURLException e) {
             createAndShowDialog(new Exception("There was an error creating the Mobile Service. Verify the URL"), "Error");
@@ -278,31 +291,5 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         builder.create().show();
     }
 
-    private void authenticate() {
-        // Login using the Google provider.
-        mClient.login("Google", "safedriving", GOOGLE_LOGIN_REQUEST_CODE);
-    }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // When request completes
-        if (resultCode == RESULT_OK) {
-            // Check the request code matches the one we send in the login request
-            if (requestCode == GOOGLE_LOGIN_REQUEST_CODE) {
-                MobileServiceActivityResult result = mClient.onActivityResult(data);
-                if (result.isLoggedIn()) {
-                    // login succeeded
-                    createAndShowDialog(String.format("You are now logged in - %1$2s", mClient.getCurrentUser().getUserId()), "Success");
-                    showContent();
-
-                } else {
-                    // login failed, check the error message
-                    String errorMessage = result.getErrorMessage();
-                    createAndShowDialog(errorMessage, "Error");
-                }
-            }
-        }
-
-
-    }
 }
