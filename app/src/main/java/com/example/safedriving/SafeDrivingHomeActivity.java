@@ -64,6 +64,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
     private LinearLayout dashboardLinearLayout;
     private LinearLayout homeLinearLayout;
+    private LinearLayout notificationLayout;
+
     private final static int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 200;
     private SharedPreferences sharedPreferences;
 
@@ -89,7 +91,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                     showDashBoard();
                     return true;
                 case R.id.navigation_notifications:
-                    dashboardLinearLayout.setVisibility(LinearLayout.GONE);
+                    showNotification();
+                    //dashboardLinearLayout.setVisibility(LinearLayout.GONE);
                     return true;
             }
             return false;
@@ -102,6 +105,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     private void hideAll() {
         dashboardLinearLayout.setVisibility(LinearLayout.GONE);
         homeLinearLayout.setVisibility(LinearLayout.GONE);
+        notificationLayout.setVisibility(LinearLayout.GONE);
     }
 
     private void showMap() {
@@ -123,6 +127,11 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         });
     }
 
+    private void showNotification() {
+        hideAll();
+        notificationLayout.setVisibility(LinearLayout.VISIBLE);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,6 +141,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
         dashboardLinearLayout = (LinearLayout) this.findViewById(R.id.dashboard_linear_layout);
         homeLinearLayout = (LinearLayout) this.findViewById(R.id.home_linear_layout);
+        notificationLayout = (LinearLayout) this.findViewById(R.id.notification_linear_layout);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -187,7 +197,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             //ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
             //listViewToDo.setAdapter(mAdapter);
 
-            addItem();
+            //addItem();
 
 //            authenticate();
 
@@ -492,6 +502,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         // Add the request to the RequestQueue.
         queue.add(stringRequest);
     }
+
 
 
 }
