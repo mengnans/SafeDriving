@@ -74,8 +74,16 @@
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
             android:orientation="vertical"
-            tools:context="com.example.safedriving.MainActivity"
-            >
+            tools:context="com.example.safedriving.MainActivity">
+
+            <ListView
+                android:id="@+id/listViewToDo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:listitem="@layout/row_list_to_do"
+                android:padding="6dip" >
+
+            </ListView>
 
         </LinearLayout>
 

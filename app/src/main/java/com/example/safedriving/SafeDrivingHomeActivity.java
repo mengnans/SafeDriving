@@ -50,11 +50,14 @@ import com.microsoft.windowsazure.mobileservices.table.sync.synchandler.SimpleSy
 import com.squareup.okhttp.OkHttpClient;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
+
+import static com.microsoft.windowsazure.mobileservices.table.query.QueryOperations.val;
 
 public class SafeDrivingHomeActivity extends AppCompatActivity {
 
@@ -130,6 +133,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     private void showNotification() {
         hideAll();
         notificationLayout.setVisibility(LinearLayout.VISIBLE);
+        refreshItemsFromTable();
     }
 
 
@@ -193,9 +197,9 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             //TODO userdata correct table name??
             mToDoTable = mClient.getTable("userdata", UserDataItem.class);
             initLocalStore().get();
-            //mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
-            //ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
-            //listViewToDo.setAdapter(mAdapter);
+            mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
+            ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
+            listViewToDo.setAdapter(mAdapter);
 
             //addItem();
 
@@ -433,11 +437,11 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         // Create a new item
         final UserDataItem item = new UserDataItem();
 
-        item.setLat(8008);
-        item.setLimit(60);
-        item.setSpeed(100);
-        item.setLong(1337);
-        item.setmStreet("testicle street");
+        item.setLat(69);
+        item.setLimit(80);
+        item.setSpeed(150);
+        item.setLong(101);
+        item.setmStreet("kimmy street");
         //item.setText(mTextNewToDo.getText().toString());
         //item.setComplete(false);
 
@@ -452,8 +456,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             //if(!entity.isComplete()){
-                            //TODO UI stuff
-                            //mAdapter.add(entity);
+
+                            mAdapter.add(entity);
                             //}
                         }
                     });
@@ -474,6 +478,48 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         UserDataItem entity = mToDoTable.insert(item).get();
         return entity;
     }
+
+    private void refreshItemsFromTable() {
+
+        // Get the items that weren't marked as completed and add them in the
+        // adapter
+
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>(){
+            @Override
+            protected Void doInBackground(Void... params) {
+
+                try {
+                    final List<UserDataItem> results = refreshItemsFromMobileServiceTable();
+
+                    //Offline Sync
+                    //final List<ToDoItem> results = refreshItemsFromMobileServiceTableSyncTable();
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mAdapter.clear();
+
+                            for (UserDataItem item : results) {
+                                mAdapter.add(item);
+                            }
+                        }
+                    });
+                } catch (final Exception e){
+                    createAndShowDialogFromTask(e, "Error");
+                }
+
+                return null;
+            }
+        };
+
+        runAsyncTask(task);
+    }
+
+    private List<UserDataItem> refreshItemsFromMobileServiceTable() throws ExecutionException, InterruptedException {
+        return mToDoTable.where().execute().get();
+        //return mToDoTable.where().field("complete").eq(val(false)).execute().get();
+    }
+
 
     public void startRouting() {
         // Instantiate the RequestQueue.

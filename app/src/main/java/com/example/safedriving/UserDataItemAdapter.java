@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.TextView;
 
 /**
  * Created by Dan on 23/09/2017.
@@ -50,8 +51,8 @@ public class UserDataItemAdapter extends ArrayAdapter<UserDataItem> {
         row.setTag(currentItem);
 
 
-        final CheckBox checkBox = (CheckBox) row.findViewById(R.id.checkToDoItem);
-        checkBox.setText(currentItem.getmStreet()); //TODO display details of speeding instance
+        final TextView speedingTickets = (TextView) row.findViewById(R.id.speedingItem);
+        speedingTickets.setText(currentItem.getmStreet()); //TODO display details of speeding instance
 
         //TODO
         /**
