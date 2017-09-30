@@ -85,7 +85,7 @@ public class UserDataItem {
 
     public void setSpeed(double speed) {
         mSpeed = speed;
-        mLimitString = Double.toString(speed);
+        mSpeedString = Double.toString(speed);
     }
 
     public void setLimit(double limit) {
