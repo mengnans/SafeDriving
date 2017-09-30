@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -179,11 +180,11 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 }
             });
 
-//            mToDoTable = mClient.getTable(UserDataItem.class);
-//            initLocalStore().get();
-//            mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
-//            ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
-//            listViewToDo.setAdapter(mAdapter);
+            mToDoTable = mClient.getTable(UserDataItem.class);
+            initLocalStore().get();
+            mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
+            ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
+            listViewToDo.setAdapter(mAdapter);
 
 //            authenticate();
 
