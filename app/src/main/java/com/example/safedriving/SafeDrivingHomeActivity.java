@@ -180,11 +180,14 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 }
             });
 
-            mToDoTable = mClient.getTable(UserDataItem.class);
+            //TODO userdata correct table name??
+            mToDoTable = mClient.getTable("userdata", UserDataItem.class);
             initLocalStore().get();
-            mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
-            ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
-            listViewToDo.setAdapter(mAdapter);
+            //mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
+            //ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
+            //listViewToDo.setAdapter(mAdapter);
+
+            addItem();
 
 //            authenticate();
 
@@ -366,11 +369,14 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                     SQLiteLocalStore localStore = new SQLiteLocalStore(mClient.getContext(), "OfflineStore", null, 1);
 
                     Map<String, ColumnDataType> tableDefinition = new HashMap<String, ColumnDataType>();
-                    //TODO create table columns
-                    //tableDefinition.put("id", ColumnDataType.String);
-                    //tableDefinition.put("text", ColumnDataType.String);
-                    //tableDefinition.put("complete", ColumnDataType.Boolean);
+                    tableDefinition.put("id", ColumnDataType.String);
+                    tableDefinition.put("latitudeStr", ColumnDataType.String);
+                    tableDefinition.put("longitudeStr", ColumnDataType.String);
+                    tableDefinition.put("mStreet", ColumnDataType.String);
+                    tableDefinition.put("mSpeedStr", ColumnDataType.String);
+                    tableDefinition.put("mLimitStr", ColumnDataType.String);
 
+                    //TODO table name??
                     localStore.defineTable("userdata", tableDefinition);
 
                     SimpleSyncHandler handler = new SimpleSyncHandler();
@@ -408,7 +414,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     }
 
     //add userdata to database
-    public void addItem(View view) {
+    //TODO addItem(View view) is original
+    public void addItem() {
         if (mClient == null) {
             return;
         }
@@ -416,6 +423,11 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         // Create a new item
         final UserDataItem item = new UserDataItem();
 
+        item.setLat(8008);
+        item.setLimit(60);
+        item.setSpeed(100);
+        item.setLong(1337);
+        item.setmStreet("testicle street");
         //item.setText(mTextNewToDo.getText().toString());
         //item.setComplete(false);
 
@@ -430,7 +442,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             //if(!entity.isComplete()){
-                            mAdapter.add(entity);
+                            //TODO UI stuff
+                            //mAdapter.add(entity);
                             //}
                         }
                     });

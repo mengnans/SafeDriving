@@ -66,13 +66,8 @@ public class UserDataItem {
 
     /**
      * Initializes a new ToDoItem
-     *
-     * @param text
-     *            The item text
-     * @param id
-     *            The item id
      */
-    public UserDataItem(String id, String latitude, String longitude, String mStreet, String speed, String mLimit) {
+    public UserDataItem(String id, double latitude, double longitude, String mStreet, double speed, double mLimit) {
         //this.setText(text);
         this.setId(id);
         this.setLat(latitude);
