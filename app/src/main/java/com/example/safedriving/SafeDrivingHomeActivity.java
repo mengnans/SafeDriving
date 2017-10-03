@@ -344,8 +344,12 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                             /**if overspeed*/
                             if(speed*3.6 > speedLimit){
                                 //TODO: generate warning data
-                                Log.e(LOG_TAG,"your speed is " + speed*3.6);
-                                Log.e(LOG_TAG,"speed limit is " + speedLimit);
+                                String warningMessage = "your speed is " + speed*3.6 + "km/h and speed limit is " + speedLimit + "km/h";
+                                Location warningLocation = oldLocation;
+                                String warningStreetName = currentStreetName;
+
+                                Log.e(LOG_TAG,"your speed is " + speed*3.6 + "km/h");
+                                Log.e(LOG_TAG,"speed limit is " + speedLimit + "km/h");
                             }
                         }
                         /** from meter per second to km per hour */
@@ -769,7 +773,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                                         }
 
                                         speedString = getNumberString(speed);
-                                        speedLimitView.setText("Your speed limit is " + speedString + "" + unit_of_measurement);
+                                        speedLimitView.setText("The speed limit is " + speedString + "" + unit_of_measurement);
 
                                     break;
                                     }
@@ -837,7 +841,11 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             if(difference >= 30){
                 if(oldLocation != null){
                     // TODO: generate warning data
-                    Log.e(LOG_TAG,"turning too fast on " + oldLocation.getLatitude() + "," + oldLocation.getLongitude());
+                    String warningMessage = "turning too fast";
+                    Location warningLocation = oldLocation;
+                    String warningStreetName = currentStreetName;
+                    // e.g turning too fast at -37.804571, 144.958612
+                    Log.e(LOG_TAG,warningMessage + "at " + warningLocation.getLatitude() + "," + warningLocation.getLongitude());
                 }
 
 
