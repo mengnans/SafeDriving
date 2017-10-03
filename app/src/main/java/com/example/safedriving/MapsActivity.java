@@ -1,9 +1,20 @@
 package com.example.safedriving;
 
+import android.content.Context;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -19,8 +30,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 //daniel is here
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -60,8 +73,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void setCurrentPositionMaker(Location location) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         mMap.addMarker(new MarkerOptions().position(latLng).title("Your position").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
     }
+
+    public String getAddress(Context context, double lat, double lng) {
+        Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(lat, lng, 1);
+            Address obj = addresses.get(0);
+
+            String add = obj.getAddressLine(0);
+            add += obj.toString();
+
+            return add;
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            return null;
+        }
+    }
+
 
     public void drawPolyline(String response) {
         try {
@@ -144,6 +175,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         return poly;
     }
+
+
 }
 
 

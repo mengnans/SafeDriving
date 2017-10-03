@@ -8,7 +8,7 @@
     <string name="checkbox_text">Item Text</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="speed_is_0_km_h">Speed is 0 km/h</string>
-    <string name="button">Get Speed</string>
+    <string name="button">Get Start</string>
     <string name="title_activity_safe_driving_index">SafeDrivingIndex</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
@@ -35,5 +35,9 @@
     <string name="pref_m_per_second_value" translatable="false">m/s</string>
 
     <string name="setting">Setting</string>
+    <string name="waiting_for_gps">Waiting for GPS</string>
+    <string name="you_speed_limit_is_0_km_h">You speed limit is 0 km/h</string>
+    <string name="you_are_on_the_unknown_street">You are on the unknown street</string>
+    <string name="your_direction_is_unknown">Your direction is unknown</string>
 
 </resources>
