@@ -6,6 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -52,7 +56,6 @@ import com.microsoft.windowsazure.mobileservices.table.sync.localstore.SQLiteLoc
 import com.microsoft.windowsazure.mobileservices.table.sync.synchandler.SimpleSyncHandler;
 import com.squareup.okhttp.OkHttpClient;
 
-import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -70,7 +73,6 @@ import java.util.concurrent.ExecutionException;
 import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
 
-import static com.microsoft.windowsazure.mobileservices.table.query.QueryOperations.val;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -98,6 +100,14 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
     private double speedLimit = -2;
     private String currentStreetName;
+    private String currentDirection = "";
+
+    private SensorManager sm;
+    private Sensor aSensor;
+    private Sensor mSensor;
+    float[] accelerometerValues = new float[3];
+    float[] magneticFieldValues = new float[3];
+    private float currentIndex = -555;
 
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -149,6 +159,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         getSpeedButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 start(speedView,speedLimiView,directionView,streetNameView);
+                calculateOrientation(directionView);
                 Toast.makeText(getApplicationContext(), "start",
                         Toast.LENGTH_SHORT).show();
             }
@@ -163,10 +174,29 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
 
     @Override
+    protected void onPause() {
+        sm.unregisterListener(myListener);
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        sm.registerListener(myListener, aSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sm.registerListener(myListener, mSensor,SensorManager.SENSOR_DELAY_NORMAL);
+        super.onResume();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_safe_driving_index);
+
+        sm = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+        aSensor = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mSensor = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        sm.registerListener(myListener, aSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sm.registerListener(myListener, mSensor,SensorManager.SENSOR_DELAY_NORMAL);
 
         dashboardLinearLayout = (LinearLayout) this.findViewById(R.id.dashboard_linear_layout);
         homeLinearLayout = (LinearLayout) this.findViewById(R.id.home_linear_layout);
@@ -770,6 +800,99 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     public String getNumberString(double speed){
         DecimalFormat df = new DecimalFormat("######0.00");
         return df.format(speed);
+    }
+
+    final SensorEventListener myListener = new SensorEventListener() {
+        public void onSensorChanged(SensorEvent sensorEvent) {
+            if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
+                magneticFieldValues = sensorEvent.values;
+            if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
+                accelerometerValues = sensorEvent.values;
+            TextView textView = (TextView) findViewById(R.id.textView_dashboard_direction);
+            if(textView == null){
+                // do nothing
+            }else{
+                calculateOrientation(textView);
+            }
+        }
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+    };
+
+    private void calculateOrientation(final TextView directionView) {
+        float[] values = new float[3];
+        float[] R = new float[9];
+        SensorManager.getRotationMatrix(R, null, accelerometerValues, magneticFieldValues);
+        SensorManager.getOrientation(R, values);
+        values[0] = (float) Math.toDegrees(values[0]);
+        float newIndex = values[0];
+        if(currentIndex == -555){
+            currentIndex = newIndex;
+        }else{
+            float difference = newIndex - currentIndex;
+            currentIndex = newIndex;
+            if(difference < 0){
+                difference = -difference;
+            }
+            Log.e(LOG_TAG,"" + difference);
+            if(difference >= 30){
+                if(oldLocation != null){
+                    // TODO: generate warning data
+                    Log.e(LOG_TAG,"turning too fast on " + oldLocation.getLatitude() + "," + oldLocation.getLongitude());
+                }
+
+
+
+            }
+        }
+        Log.i(LOG_TAG, values[0]+"");
+
+        //values[1] = (float) Math.toDegrees(values[1]);
+        //values[2] = (float) Math.toDegrees(values[2]);
+        String direction = "";
+        if(values[0] >= -5 && values[0] < 5){
+            Log.v(LOG_TAG, "North");
+            direction = "North";
+        }
+        else if(values[0] >= 5 && values[0] < 85){
+            Log.v(LOG_TAG, "North East");
+            direction = "North East";
+        }
+        else if(values[0] >= 85 && values[0] <=95){
+            Log.v(LOG_TAG, "East");
+            direction = "East";
+        }
+        else if(values[0] >= 95 && values[0] <175){
+            Log.v(LOG_TAG, "South East");
+            direction = "South East";
+        }
+        else if((values[0] >= 175 && values[0] <= 180) || (values[0]) >= -180 && values[0] < -175){
+            Log.v(LOG_TAG, "South");
+            direction = "South";
+        }
+        else if(values[0] >= -175 && values[0] <-95){
+            Log.v(LOG_TAG, "South West");
+            direction = "South West";
+        }
+        else if(values[0] >= -95 && values[0] < -85){
+            Log.v(LOG_TAG, "West");
+            direction = "West";
+        }
+        else if(values[0] >= -85 && values[0] <-5){
+            Log.v(LOG_TAG, "North West");
+            direction = "North West";
+        }
+
+        if("".equals(currentDirection)){
+            currentDirection = direction;
+        }else if(currentDirection.equals(direction)){
+            // do nothing
+        }else{
+            currentDirection = direction;
+            directionView.setText("Your direction is " + direction);
+        }
+
+
+
     }
 
 
