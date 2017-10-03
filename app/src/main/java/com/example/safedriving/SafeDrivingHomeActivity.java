@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,11 +63,14 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
+
+import static com.microsoft.windowsazure.mobileservices.table.query.QueryOperations.val;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -80,6 +84,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     private LinearLayout dashboardLinearLayout;
     private LinearLayout homeLinearLayout;
     private LinearLayout waitingLinearLayout;
+    private LinearLayout notificationLayout;
+
     private final static int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 200;
     private SharedPreferences sharedPreferences;
 
@@ -108,7 +114,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                     showDashBoard();
                     return true;
                 case R.id.navigation_notifications:
-                    dashboardLinearLayout.setVisibility(LinearLayout.GONE);
+                    showNotification();
+                    //dashboardLinearLayout.setVisibility(LinearLayout.GONE);
                     return true;
             }
             return false;
@@ -121,6 +128,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     private void hideAll() {
         dashboardLinearLayout.setVisibility(LinearLayout.GONE);
         homeLinearLayout.setVisibility(LinearLayout.GONE);
+        notificationLayout.setVisibility(LinearLayout.GONE);
     }
 
     private void showMap() {
@@ -147,6 +155,12 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         });
     }
 
+    private void showNotification() {
+        hideAll();
+        notificationLayout.setVisibility(LinearLayout.VISIBLE);
+        refreshItemsFromTable();
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,6 +171,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         dashboardLinearLayout = (LinearLayout) this.findViewById(R.id.dashboard_linear_layout);
         homeLinearLayout = (LinearLayout) this.findViewById(R.id.home_linear_layout);
         waitingLinearLayout = (LinearLayout) this.findViewById(R.id.waiting_linear_layout);
+        notificationLayout = (LinearLayout) this.findViewById(R.id.notification_linear_layout);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -205,13 +220,14 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 }
             });
 
-//            mToDoTable = mClient.getTable(UserDataItem.class);
-//            initLocalStore().get();
-//            mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
-//            ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
-//            listViewToDo.setAdapter(mAdapter);
+            //TODO userdata correct table name??
+            mToDoTable = mClient.getTable("userdata", UserDataItem.class);
+            initLocalStore().get();
+            mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
+            ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
+            listViewToDo.setAdapter(mAdapter);
 
-//            authenticate();
+            //addItem();         authenticate();
 
         } catch (MalformedURLException e) {
             createAndShowDialog(new Exception("There was an error creating the Mobile Service. Verify the URL"), "Error");
@@ -433,11 +449,14 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                     SQLiteLocalStore localStore = new SQLiteLocalStore(mClient.getContext(), "OfflineStore", null, 1);
 
                     Map<String, ColumnDataType> tableDefinition = new HashMap<String, ColumnDataType>();
-                    //TODO create table columns
-                    //tableDefinition.put("id", ColumnDataType.String);
-                    //tableDefinition.put("text", ColumnDataType.String);
-                    //tableDefinition.put("complete", ColumnDataType.Boolean);
+                    tableDefinition.put("id", ColumnDataType.String);
+                    tableDefinition.put("latitudeStr", ColumnDataType.String);
+                    tableDefinition.put("longitudeStr", ColumnDataType.String);
+                    tableDefinition.put("mStreet", ColumnDataType.String);
+                    tableDefinition.put("mSpeedStr", ColumnDataType.String);
+                    tableDefinition.put("mLimitStr", ColumnDataType.String);
 
+                    //TODO table name??
                     localStore.defineTable("userdata", tableDefinition);
 
                     SimpleSyncHandler handler = new SimpleSyncHandler();
@@ -475,7 +494,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     }
 
     //add userdata to database
-    public void addItem(View view) {
+    //TODO addItem(View view) is original
+    public void addItem() {
         if (mClient == null) {
             return;
         }
@@ -483,6 +503,11 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         // Create a new item
         final UserDataItem item = new UserDataItem();
 
+        item.setLat(69);
+        item.setLimit(80);
+        item.setSpeed(150);
+        item.setLong(101);
+        item.setmStreet("kimmy street");
         //item.setText(mTextNewToDo.getText().toString());
         //item.setComplete(false);
 
@@ -497,6 +522,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             //if(!entity.isComplete()){
+
                             mAdapter.add(entity);
                             //}
                         }
@@ -518,6 +544,48 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         UserDataItem entity = mToDoTable.insert(item).get();
         return entity;
     }
+
+    private void refreshItemsFromTable() {
+
+        // Get the items that weren't marked as completed and add them in the
+        // adapter
+
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>(){
+            @Override
+            protected Void doInBackground(Void... params) {
+
+                try {
+                    final List<UserDataItem> results = refreshItemsFromMobileServiceTable();
+
+                    //Offline Sync
+                    //final List<ToDoItem> results = refreshItemsFromMobileServiceTableSyncTable();
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mAdapter.clear();
+
+                            for (UserDataItem item : results) {
+                                mAdapter.add(item);
+                            }
+                        }
+                    });
+                } catch (final Exception e){
+                    createAndShowDialogFromTask(e, "Error");
+                }
+
+                return null;
+            }
+        };
+
+        runAsyncTask(task);
+    }
+
+    private List<UserDataItem> refreshItemsFromMobileServiceTable() throws ExecutionException, InterruptedException {
+        return mToDoTable.where().execute().get();
+        //return mToDoTable.where().field("complete").eq(val(false)).execute().get();
+    }
+
 
     public void startRouting() {
         // Instantiate the RequestQueue.
@@ -703,6 +771,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         DecimalFormat df = new DecimalFormat("######0.00");
         return df.format(speed);
     }
+
 
 
 
