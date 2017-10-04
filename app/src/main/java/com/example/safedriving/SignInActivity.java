@@ -1,5 +1,6 @@
 package com.example.safedriving;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -17,7 +18,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 
-public class SignInActivity  extends AppCompatActivity {
+public class SignInActivity  extends FragmentActivity {
 
     public GoogleApiClient mGoogleApiClient;
     public final int RC_SIGN_IN = 1;
@@ -86,6 +87,11 @@ public class SignInActivity  extends AppCompatActivity {
             this.first_name = acct.getGivenName();
             this.last_name = acct.getFamilyName();
             this.id = acct.getId();
+            Intent output = new Intent();
+            output.putExtra("userid", this.id);
+            output.putExtra("first_name", this.first_name);
+            output.putExtra("last_name", this.last_name);
+            setResult(Activity.RESULT_OK, output);
             Toast.makeText(this,"Login Successful, First Name = "+first_name+
                     "Last Name = "+ last_name+", User ID = "+ id,Toast.LENGTH_LONG).show();
             finish();

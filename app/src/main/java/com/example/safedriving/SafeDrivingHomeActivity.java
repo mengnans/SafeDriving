@@ -93,6 +93,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
     private MobileServiceClient mClient;
     private MobileServiceTable<UserDataItem> mToDoTable;
+    private MobileServiceTable<UserItem> mUserProfileTable;
     private UserDataItemAdapter mAdapter;
     public static final int GOOGLE_LOGIN_REQUEST_CODE = 1;
     public static final int SIGNINCODE = 2;
@@ -194,9 +195,10 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_safe_driving_index);
 
         Intent signInIntent = new Intent(getApplicationContext(),SignInActivity.class);
-        startActivity(signInIntent);
+        startActivityForResult(signInIntent,SIGNINCODE);
 
         showContent();
+
         //authenticate();
 
 
@@ -265,6 +267,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
             //TODO userdata correct table name??
             mToDoTable = mClient.getTable("userdata", UserDataItem.class);
+            mUserProfileTable = mClient.getTable("Users", UserItem.class);
             initLocalStore().get();
             mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
             ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
@@ -458,6 +461,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // When request completes
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             // Check the request code matches the one we send in the login request
             if (requestCode == GOOGLE_LOGIN_REQUEST_CODE) {
@@ -476,7 +480,10 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
 
             if(requestCode == SIGNINCODE){
-                showContent();
+                String id = data.getStringExtra("userid");
+                String first_name = data.getStringExtra("first_name");
+                String last_name = data.getStringExtra("last_name");
+                //UpdateUserData(id, first_name,last_name);
             }
         }
     }
@@ -540,6 +547,29 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             return task.execute();
         }
     }
+
+
+    public void UpdateUserData(String id, String first_name, String last_name){
+        if (mClient == null) {
+            return;
+        }
+        final UserItem item = new UserItem(id, first_name,last_name);
+
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    mUserProfileTable.insert(item);
+                } catch (final Exception e) {
+                    createAndShowDialogFromTask(e, "Error");
+                }
+                return null;
+            }
+        };
+
+        runAsyncTask(task);
+    }
+
 
     //add userdata to database
     //TODO addItem(View view) is original

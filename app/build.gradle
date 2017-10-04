@@ -10,6 +10,17 @@ android {
         versionName "1.0"
         vectorDrawables.useSupportLibrary = true
     }
+
+    signingConfigs {
+
+        myConfig {
+            storeFile file("safedriving.jks")
+            storePassword "12345678"
+            keyAlias "Safedriving"
+            keyPassword "12345678"
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
