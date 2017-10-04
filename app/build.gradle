@@ -3,7 +3,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion '25.0.0'
     defaultConfig {
-        applicationId "com.example.zumoappname"
+        applicationId "com.example.safedriving"
         minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
@@ -49,5 +49,8 @@ dependencies {
     compile 'com.google.android.gms:play-services-places:10.0.1'
     compile 'com.android.volley:volley:1.0.0'
     compile 'com.google.maps.android:android-maps-utils:0.5+'
+    compile 'com.google.android.gms:play-services-auth:10.0.1'
 }
+
+apply plugin: 'com.google.gms.google-services'
 

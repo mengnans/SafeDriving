@@ -95,6 +95,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     private MobileServiceTable<UserDataItem> mToDoTable;
     private UserDataItemAdapter mAdapter;
     public static final int GOOGLE_LOGIN_REQUEST_CODE = 1;
+    public static final int SIGNINCODE = 2;
     private Location oldLocation;
     private Place destinationPlace;
 
@@ -192,6 +193,18 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_safe_driving_index);
 
+        Intent signInIntent = new Intent(getApplicationContext(),SignInActivity.class);
+        startActivity(signInIntent);
+
+        showContent();
+        //authenticate();
+
+
+
+    }
+
+    public void showContent() {
+
         sm = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         aSensor = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensor = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -257,17 +270,13 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
             listViewToDo.setAdapter(mAdapter);
 
-            //addItem();         authenticate();
+            //addItem();
 
         } catch (MalformedURLException e) {
             createAndShowDialog(new Exception("There was an error creating the Mobile Service. Verify the URL"), "Error");
         } catch (Exception e) {
             createAndShowDialog(e, "Error");
         }
-
-    }
-
-    public void showContent() {
 
     }
 
@@ -463,6 +472,11 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                     String errorMessage = result.getErrorMessage();
                     createAndShowDialog(errorMessage, "Error");
                 }
+            }
+
+
+            if(requestCode == SIGNINCODE){
+                showContent();
             }
         }
     }

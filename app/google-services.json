@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "708567849561",
+    "project_id": "safe-driving-180612"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:708567849561:android:e0300a9e068cd414",
+        "android_client_info": {
+          "package_name": "com.example.safedriving"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "708567849561-r9mlcslksmdp2ri040a4gcrh2h2lhe7j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.safedriving",
+            "certificate_hash": "d09e8a4b8a4771090d4f6d48db077e620b89e3a5"
+          }
+        },
+        {
+          "client_id": "708567849561-d1dbvu21sulcc86c116ljloo0dn4336n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2qgYhAkfPZ0Kvg8gqi_ay3h6ccV0diu4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
