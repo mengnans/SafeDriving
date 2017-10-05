@@ -267,12 +267,14 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
             //TODO userdata correct table name??
             mToDoTable = mClient.getTable("userdata", UserDataItem.class);
-            mUserProfileTable = mClient.getTable("Users", UserItem.class);
+            mUserProfileTable = mClient.getTable("userlogindata", UserItem.class);
             initLocalStore().get();
+            initLocalStoreUsers().get();
             mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
             ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
             listViewToDo.setAdapter(mAdapter);
 
+            //addUserItem();
             //addItem();
 
         } catch (MalformedURLException e) {
@@ -529,6 +531,43 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         return runAsyncTask(task);
     }
 
+    //part of setting up database interactions
+    private AsyncTask<Void, Void, Void> initLocalStoreUsers() throws MobileServiceLocalStoreException, ExecutionException, InterruptedException {
+
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+
+                    MobileServiceSyncContext syncContext = mClient.getSyncContext();
+
+                    if (syncContext.isInitialized())
+                        return null;
+
+                    SQLiteLocalStore localStore = new SQLiteLocalStore(mClient.getContext(), "OfflineStore", null, 1);
+
+                    Map<String, ColumnDataType> tableDefinition = new HashMap<String, ColumnDataType>();
+                    tableDefinition.put("id", ColumnDataType.String);
+                    tableDefinition.put("mfirstname", ColumnDataType.String);
+                    tableDefinition.put("mlastname", ColumnDataType.String);
+
+                    localStore.defineTable("userlogindata", tableDefinition);
+
+                    SimpleSyncHandler handler = new SimpleSyncHandler();
+
+                    syncContext.initialize(localStore, handler).get();
+
+                } catch (final Exception e) {
+                    createAndShowDialogFromTask(e, "Error");
+                }
+
+                return null;
+            }
+        };
+
+        return runAsyncTask(task);
+    }
+
     //is called from initLocalStore()
     private void createAndShowDialogFromTask(final Exception exception, String title) {
         runOnUiThread(new Runnable() {
@@ -581,11 +620,11 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         // Create a new item
         final UserDataItem item = new UserDataItem();
 
-        item.setLat(69);
-        item.setLimit(80);
-        item.setSpeed(150);
-        item.setLong(101);
-        item.setmStreet("kimmy street");
+        item.setLat(0);
+        item.setLimit(10);
+        item.setSpeed(20);
+        item.setLong(1);
+        item.setmStreet("drift king hill");
         //item.setText(mTextNewToDo.getText().toString());
         //item.setComplete(false);
 
@@ -617,9 +656,48 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         //mTextNewToDo.setText("");
     }
 
+
+    public void addUserItem() {
+        if (mClient == null) {
+            return;
+        }
+
+        // Create a new item
+        final UserItem item = new UserItem();
+
+        item.setFirstName("Dicky");
+        item.setLastName("Head");
+
+        //item.setText(mTextNewToDo.getText().toString());
+        //item.setComplete(false);
+
+        // Insert the new item
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    final UserItem entity = addUserItemInTable(item);
+
+                } catch (final Exception e) {
+                    createAndShowDialogFromTask(e, "Error");
+                }
+                return null;
+            }
+        };
+
+        runAsyncTask(task);
+
+        //mTextNewToDo.setText("");
+    }
+
     //add userdata to database
     public UserDataItem addItemInTable(UserDataItem item) throws ExecutionException, InterruptedException {
         UserDataItem entity = mToDoTable.insert(item).get();
+        return entity;
+    }
+    //add userdata to database
+    public UserItem addUserItemInTable(UserItem item) throws ExecutionException, InterruptedException {
+        UserItem entity = mUserProfileTable.insert(item).get();
         return entity;
     }
 
