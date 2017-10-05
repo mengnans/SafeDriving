@@ -51,6 +51,9 @@ public class UserDataItem {
     @com.google.gson.annotations.SerializedName("mLimitStr")
     private String mLimitString;
 
+    @com.google.gson.annotations.SerializedName("userId")
+    private String mUserId;
+
     /**
      * ToDoItem constructor
      */
@@ -76,6 +79,9 @@ public class UserDataItem {
         this.setSpeed(speed);
         this.setLimit(mLimit);
     }
+
+    public void setUserId(String id) { mUserId = id;}
+    public String getUserId() { return mUserId; }
 
     public double getSpeed() { return mSpeed; }
     public String getmSpeedString() { return mSpeedString; }

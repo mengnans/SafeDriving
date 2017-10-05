@@ -111,6 +111,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     float[] magneticFieldValues = new float[3];
     private float currentIndex = -555;
 
+    private String userId = "0"; //TODO temp value
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -276,6 +277,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
             //addUserItem();
             //addItem();
+            //addTestItem();
 
         } catch (MalformedURLException e) {
             createAndShowDialog(new Exception("There was an error creating the Mobile Service. Verify the URL"), "Error");
@@ -365,7 +367,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                                 Log.e(LOG_TAG,"your speed is " + speed*3.6 + "km/h");
                                 Log.e(LOG_TAG,"speed limit is " + speedLimit + "km/h");
 
-                                addItem(oldLocation.getLatitude(),oldLocation.getLongitude(), speed, speedLimit, currentStreetName);
+                                addItem(oldLocation.getLatitude(),oldLocation.getLongitude(), speed, speedLimit, currentStreetName, userId);
                             }
                         }
                         /** from meter per second to km per hour */
@@ -612,8 +614,51 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     }
 
 
+    public void addTestItem() {
+        if (mClient == null) {
+            return;
+        }
+
+        // Create a new item
+        final UserDataItem item = new UserDataItem();
+
+        //item.setLat(lat);
+        //item.setLimit(slimit);
+        //item.setSpeed(speed);
+        //item.setLong(longitude);
+        //item.setmStreet(street);
+        item.setUserId("96");
+
+        // Insert the new item
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    final UserDataItem entity = addItemInTable(item);
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //if(!entity.isComplete()){
+
+                            mAdapter.add(entity);
+                            //}
+                        }
+                    });
+                } catch (final Exception e) {
+                    createAndShowDialogFromTask(e, "Error");
+                }
+                return null;
+            }
+        };
+
+        runAsyncTask(task);
+
+        //mTextNewToDo.setText("");
+    }
+
     //add userdata to database
-    public void addItem(double lat, double longitude, double speed, double slimit, String street) {
+    public void addItem(double lat, double longitude, double speed, double slimit, String street, String userid) {
         if (mClient == null) {
             return;
         }
@@ -626,6 +671,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         item.setSpeed(speed);
         item.setLong(longitude);
         item.setmStreet(street);
+        item.setId(userid);
         //item.setText(mTextNewToDo.getText().toString());
         //item.setComplete(false);
 
@@ -740,7 +786,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     }
 
     private List<UserDataItem> refreshItemsFromMobileServiceTable() throws ExecutionException, InterruptedException {
-        return mToDoTable.where().execute().get();
+        // working - return mToDoTable.where().execute().get();
+        return mToDoTable.where().field("userId").eq(userId).execute().get();
         //return mToDoTable.where().field("complete").eq(val(false)).execute().get();
     }
 
