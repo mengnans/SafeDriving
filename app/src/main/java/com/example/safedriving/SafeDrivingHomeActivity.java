@@ -111,7 +111,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     float[] magneticFieldValues = new float[3];
     private float currentIndex = -555;
 
-    private String userId = "0"; //TODO temp value
+    //private String userId = "104369404011449547684";
+    private String userId = "0";
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -276,7 +277,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             listViewToDo.setAdapter(mAdapter);
 
             //addUserItem();
-            //addItem();
+            //addItem(66,99,2000,60,"shit creek",userId);
             //addTestItem();
 
         } catch (MalformedURLException e) {
@@ -489,7 +490,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 String id = data.getStringExtra("userid");
                 String first_name = data.getStringExtra("first_name");
                 String last_name = data.getStringExtra("last_name");
-                //UpdateUserData(id, first_name,last_name);
+                UpdateUserData(id, first_name,last_name);
+                userId = id;
             }
         }
     }
@@ -671,7 +673,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         item.setSpeed(speed);
         item.setLong(longitude);
         item.setmStreet(street);
-        item.setId(userid);
+        item.setUserId(userid);
         //item.setText(mTextNewToDo.getText().toString());
         //item.setComplete(false);
 
