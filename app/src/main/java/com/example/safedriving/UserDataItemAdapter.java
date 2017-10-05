@@ -52,27 +52,13 @@ public class UserDataItemAdapter extends ArrayAdapter<UserDataItem> {
 
 
         final TextView speedingTickets = (TextView) row.findViewById(R.id.speedingItem);
-        speedingTickets.setText(currentItem.getmStreet()); //TODO display details of speeding instance
+        speedingTickets.setText(
+                "Lat: "+currentItem.getmLatString()
+                +", Long: " +currentItem.getmLongString()
+                +", Speed: "+currentItem.getmSpeedString()
+                +", Limit: "+currentItem.getmLimitString()
+                +", Street: "+ currentItem.getmStreet());
 
-        //TODO
-        /**
-        checkBox.setChecked(false);
-        checkBox.setEnabled(true);
-
-        checkBox.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View arg0) {
-                if (checkBox.isChecked()) {
-                    checkBox.setEnabled(false);
-                    if (mContext instanceof ToDoActivity) {
-                        ToDoActivity activity = (ToDoActivity) mContext;
-                        activity.checkItem(currentItem);
-                    }
-                }
-            }
-        });
-        */
         return row;
     }
 }

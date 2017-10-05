@@ -364,6 +364,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
                                 Log.e(LOG_TAG,"your speed is " + speed*3.6 + "km/h");
                                 Log.e(LOG_TAG,"speed limit is " + speedLimit + "km/h");
+
+                                addItem(oldLocation.getLatitude(),oldLocation.getLongitude(), speed, speedLimit, currentStreetName);
                             }
                         }
                         /** from meter per second to km per hour */
@@ -611,8 +613,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
 
     //add userdata to database
-    //TODO addItem(View view) is original
-    public void addItem() {
+    public void addItem(double lat, double longitude, double speed, double slimit, String street) {
         if (mClient == null) {
             return;
         }
@@ -620,11 +621,11 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         // Create a new item
         final UserDataItem item = new UserDataItem();
 
-        item.setLat(0);
-        item.setLimit(10);
-        item.setSpeed(20);
-        item.setLong(1);
-        item.setmStreet("drift king hill");
+        item.setLat(lat);
+        item.setLimit(slimit);
+        item.setSpeed(speed);
+        item.setLong(longitude);
+        item.setmStreet(street);
         //item.setText(mTextNewToDo.getText().toString());
         //item.setComplete(false);
 
@@ -657,7 +658,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     }
 
 
-    public void addUserItem() {
+    public void addUserItem(String id, String firstname, String lastname) {
         if (mClient == null) {
             return;
         }
@@ -665,8 +666,9 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         // Create a new item
         final UserItem item = new UserItem();
 
-        item.setFirstName("Dicky");
-        item.setLastName("Head");
+        item.setId(id);
+        item.setFirstName(firstname);
+        item.setLastName(lastname);
 
         //item.setText(mTextNewToDo.getText().toString());
         //item.setComplete(false);
