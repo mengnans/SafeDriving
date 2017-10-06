@@ -78,6 +78,12 @@ import java.util.concurrent.TimeUnit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+/**
+ *
+ * @author Daniel Gray, Mengnan Shi, Stanley Sim
+ *
+ */
+
 public class SafeDrivingHomeActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = SafeDrivingHomeActivity.class.getSimpleName();
@@ -130,7 +136,6 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                     return true;
                 case R.id.navigation_notifications:
                     showNotification();
-                    //dashboardLinearLayout.setVisibility(LinearLayout.GONE);
                     return true;
             }
             return false;
@@ -154,10 +159,6 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     private void showDashBoard() {
         //junk data
         //addItem(1,1,101,60,"Beak from the Creek St",userId);
-        //addItem(2,2,102,60,"beta",userId);
-        //addItem(3,3,103,60,"kappa",userId);
-        //addItem(4,4,104,60,"gamma",userId);
-        //addItem(5,5,105,60,"delta",userId);
         hideAll();
         dashboardLinearLayout.setVisibility(LinearLayout.VISIBLE);
         final Button getSpeedButton = (Button) this.findViewById(R.id.get_start_button);
@@ -275,7 +276,6 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 }
             });
 
-            //TODO userdata correct table name??
             mToDoTable = mClient.getTable("userdata", UserDataItem.class);
             mUserProfileTable = mClient.getTable("userlogindata", UserItem.class);
             //initLocalStore().get();
@@ -283,10 +283,6 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
             ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
             listViewToDo.setAdapter(mAdapter);
-
-            //addUserItem();
-
-            //addTestItem();
 
         } catch (MalformedURLException e) {
             createAndShowDialog(new Exception("There was an error creating the Mobile Service. Verify the URL"), "Error");
@@ -498,13 +494,13 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 String id = data.getStringExtra("userid");
                 String first_name = data.getStringExtra("first_name");
                 String last_name = data.getStringExtra("last_name");
-                UpdateUserData(id, first_name,last_name);
+                addUserItem(id, first_name,last_name);
                 userId = id;
             }
         }
     }
 
-    //part of setting up database interactions
+    //NOT IMPLEMENTED - involved in setting up local storage of speeding instance data
     private AsyncTask<Void, Void, Void> initLocalStore() throws MobileServiceLocalStoreException, ExecutionException, InterruptedException {
 
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
@@ -545,7 +541,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         return runAsyncTask(task);
     }
 
-    //part of setting up database interactions
+    //NOT IMPLEMENTED - involved in setting up local storage of login data table
     private AsyncTask<Void, Void, Void> initLocalStoreUsers() throws MobileServiceLocalStoreException, ExecutionException, InterruptedException {
 
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
@@ -592,7 +588,6 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         });
     }
 
-    //is called from initLocalStore()
     private AsyncTask<Void, Void, Void> runAsyncTask(AsyncTask<Void, Void, Void> task) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             return task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -601,8 +596,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         }
     }
 
-
-    public void UpdateUserData(String id, String first_name, String last_name){
+    //Adds user login information into Azure SQL table
+    public void addUserItem(String id, String first_name, String last_name){
         if (mClient == null) {
             return;
         }
@@ -619,55 +614,10 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 return null;
             }
         };
-
         runAsyncTask(task);
     }
 
-
-    public void addTestItem() {
-        if (mClient == null) {
-            return;
-        }
-
-        // Create a new item
-        final UserDataItem item = new UserDataItem();
-
-        //item.setLat(lat);
-        //item.setLimit(slimit);
-        //item.setSpeed(speed);
-        //item.setLong(longitude);
-        //item.setmStreet(street);
-        item.setUserId("96");
-
-        // Insert the new item
-        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                try {
-                    final UserDataItem entity = addItemInTable(item);
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            //if(!entity.isComplete()){
-
-                            mAdapter.add(entity);
-                            //}
-                        }
-                    });
-                } catch (final Exception e) {
-                    createAndShowDialogFromTask(e, "Error");
-                }
-                return null;
-            }
-        };
-
-        runAsyncTask(task);
-
-        //mTextNewToDo.setText("");
-    }
-
-    //add userdata to database
+    //Add particular speeding instance as a row into Azure SQL table
     public void addItem(double lat, double longitude, double speed, double slimit, String street, String userid) {
         if (mClient == null) {
             return;
@@ -682,8 +632,6 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         item.setLong(longitude);
         item.setmStreet(street);
         item.setUserId(userid);
-        //item.setText(mTextNewToDo.getText().toString());
-        //item.setComplete(false);
 
         // Insert the new item
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
@@ -695,10 +643,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            //if(!entity.isComplete()){
-
                             mAdapter.add(entity);
-                            //}
                         }
                     });
                 } catch (final Exception e) {
@@ -707,62 +652,25 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 return null;
             }
         };
-
         runAsyncTask(task);
-
-        //mTextNewToDo.setText("");
     }
 
-
-    public void addUserItem(String id, String firstname, String lastname) {
-        if (mClient == null) {
-            return;
-        }
-
-        // Create a new item
-        final UserItem item = new UserItem();
-
-        item.setId(id);
-        item.setFirstName(firstname);
-        item.setLastName(lastname);
-
-        //item.setText(mTextNewToDo.getText().toString());
-        //item.setComplete(false);
-
-        // Insert the new item
-        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                try {
-                    final UserItem entity = addUserItemInTable(item);
-
-                } catch (final Exception e) {
-                    createAndShowDialogFromTask(e, "Error");
-                }
-                return null;
-            }
-        };
-
-        runAsyncTask(task);
-
-        //mTextNewToDo.setText("");
-    }
-
-    //add userdata to database
+    //add UserDataItem to Azure SQL table
     public UserDataItem addItemInTable(UserDataItem item) throws ExecutionException, InterruptedException {
         UserDataItem entity = mToDoTable.insert(item).get();
         return entity;
     }
-    //add userdata to database
+    //add UserItem to Azure SQL table
     public UserItem addUserItemInTable(UserItem item) throws ExecutionException, InterruptedException {
         UserItem entity = mUserProfileTable.insert(item).get();
         return entity;
     }
 
+    /**
+     * Retrieves speeding notification rows from Azure table for the currently logged in user
+     * Adds rows to the adaptor which will populate the Notifications screen
+     */
     private void refreshItemsFromTable() {
-
-        // Get the items that weren't marked as completed and add them in the
-        // adapter
 
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>(){
             @Override
@@ -770,9 +678,6 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
                 try {
                     final List<UserDataItem> results = refreshItemsFromMobileServiceTable();
-
-                    //Offline Sync
-                    //final List<ToDoItem> results = refreshItemsFromMobileServiceTableSyncTable();
 
                     runOnUiThread(new Runnable() {
                         @Override
@@ -795,10 +700,10 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         runAsyncTask(task);
     }
 
+    //Retrieves speeding notification rows from Azure table for the currently logged in user
     private List<UserDataItem> refreshItemsFromMobileServiceTable() throws ExecutionException, InterruptedException {
-        // working - return mToDoTable.where().execute().get();
+        //get all data - return mToDoTable.where().execute().get();
         return mToDoTable.where().field("userId").eq(userId).orderBy("createdAt", QueryOrder.Descending).execute().get();
-        //return mToDoTable.where().field("complete").eq(val(false)).execute().get();
     }
 
 

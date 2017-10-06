@@ -3,32 +3,18 @@ package com.example.safedriving;
 import java.util.Date;
 
 /**
- * Created by Dan on 23/09/2017.
+ * This class contains speeding data generated from speeding instances
+ * Each object represents a row in the Azure SQL table
+ * Includes get/set methods
+ *
+ * @author Daniel Gray, Mengnan Shi, Stanley Sim
+ *
  */
 
 public class UserDataItem {
 
-    /**
-     * Item text
-     */
-/*
-    @com.google.gson.annotations.SerializedName("text")
-    private String mText;
-*/
-
-    /**
-     * Item Id
-     */
     @com.google.gson.annotations.SerializedName("id")
     private String mId;
-
-    /**
-     * Indicates if the item is completed
-     */
-/*
-    @com.google.gson.annotations.SerializedName("complete")
-    private boolean mComplete;
-*/
 
     @com.google.gson.annotations.SerializedName("latitude")
     private double mLat;
@@ -59,30 +45,9 @@ public class UserDataItem {
     @com.google.gson.annotations.SerializedName("createdAt")
     private Date createdAt;
 
-    /**
-     * ToDoItem constructor
-     */
+
     public UserDataItem() {
 
-    }
-
-/*    @Override
-    public String toString() {
-        return getText();
-    }*/
-
-
-    /**
-     * Initializes a new ToDoItem
-     */
-    public UserDataItem(String id, double latitude, double longitude, String mStreet, double speed, double mLimit) {
-        //this.setText(text);
-        this.setId(id);
-        this.setLat(latitude);
-        this.setLong(longitude);
-        this.setmStreet(mStreet);
-        this.setSpeed(speed);
-        this.setLimit(mLimit);
     }
 
     public void setDate(Date date) { date = createdAt; }
@@ -130,59 +95,19 @@ public class UserDataItem {
         mLongString = Double.toString(longitude);
     }
 
-    /**
-     * Returns the item text
-     */
-//    public String getText() {
-//        return mText;
-//    }
-
-    /**
-     * Sets the item text
-     *
-     */
- //   public final void setText(String text) {
- //       mText = text;
-//    }
-
     public void setmStreet(String mStreet) {
         this.mStreet = mStreet;
     }
-
     public String getmStreet() {
         return mStreet;
     }
 
-    /**
-     * Returns the item id
-     */
     public String getId() {
         return mId;
     }
-
-    /**
-     * Sets the item id
-     *
-     * @param id
-     *            id to set
-     */
     public final void setId(String id) {
         mId = id;
     }
-
-    /**
-     * Indicates if the item is marked as completed
-     */
-//    public boolean isComplete() {
-//        return mComplete;
-//    }
-
-    /**
-     * Marks the item as completed or incompleted
-     */
-//    public void setComplete(boolean complete) {
-//        mComplete = complete;
-//    }
 
     @Override
     public boolean equals(Object o) {

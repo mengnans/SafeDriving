@@ -1,7 +1,12 @@
 package com.example.safedriving;
 
 /**
- * Created by Stanley on 04-Oct-17.
+ * This class contains user data generated at login
+ * Each object represents a row in the Azure SQL table
+ * Includes get/set methods
+ *
+ * @author Daniel Gray, Mengnan Shi, Stanley Sim
+ *
  */
 
 public class UserItem {

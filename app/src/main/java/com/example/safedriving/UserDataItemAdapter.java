@@ -10,10 +10,12 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 /**
- * Created by Dan on 23/09/2017.
- */
-/**
+ *
  * Adapter to bind a UserDataItem List to a view
+ * Populates Notification screen with rows of speeding instances
+ *
+ * @author Daniel Gray, Mengnan Shi, Stanley Sim
+ *
  */
 public class UserDataItemAdapter extends ArrayAdapter<UserDataItem> {
 
