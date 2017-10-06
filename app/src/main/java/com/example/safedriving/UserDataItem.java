@@ -1,5 +1,7 @@
 package com.example.safedriving;
 
+import java.util.Date;
+
 /**
  * Created by Dan on 23/09/2017.
  */
@@ -54,6 +56,9 @@ public class UserDataItem {
     @com.google.gson.annotations.SerializedName("userId")
     private String mUserId;
 
+    @com.google.gson.annotations.SerializedName("createdAt")
+    private Date createdAt;
+
     /**
      * ToDoItem constructor
      */
@@ -79,6 +84,9 @@ public class UserDataItem {
         this.setSpeed(speed);
         this.setLimit(mLimit);
     }
+
+    public void setDate(Date date) { date = createdAt; }
+    public String getDateString() { return createdAt.toString(); }
 
     public void setUserId(String id) { mUserId = id;}
     public String getUserId() { return mUserId; }

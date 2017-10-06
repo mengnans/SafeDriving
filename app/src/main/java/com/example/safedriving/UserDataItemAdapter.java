@@ -53,11 +53,12 @@ public class UserDataItemAdapter extends ArrayAdapter<UserDataItem> {
 
         final TextView speedingTickets = (TextView) row.findViewById(R.id.speedingItem);
         speedingTickets.setText(
-                "Lat: "+currentItem.getmLatString()
-                +", Long: " +currentItem.getmLongString()
-                +", Speed: "+currentItem.getmSpeedString()
-                +", Limit: "+currentItem.getmLimitString()
-                +", Street: "+ currentItem.getmStreet());
+                currentItem.getDateString() +"\n"
+                +"Speed: "+currentItem.getmSpeedString()+"\n"
+                +"Limit: "+currentItem.getmLimitString()+"\n"
+                +"Street: "+ currentItem.getmStreet()+"\n"
+                +"Lat: "+currentItem.getmLatString()+"\n"
+                +"Long: " +currentItem.getmLongString());
 
         return row;
     }

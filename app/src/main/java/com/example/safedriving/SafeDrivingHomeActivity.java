@@ -151,6 +151,12 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     }
 
     private void showDashBoard() {
+        //junk data
+        //addItem(1,1,101,60,"Beak from the Creek St",userId);
+        //addItem(2,2,102,60,"beta",userId);
+        //addItem(3,3,103,60,"kappa",userId);
+        //addItem(4,4,104,60,"gamma",userId);
+        //addItem(5,5,105,60,"delta",userId);
         hideAll();
         dashboardLinearLayout.setVisibility(LinearLayout.VISIBLE);
         final Button getSpeedButton = (Button) this.findViewById(R.id.get_start_button);
@@ -171,6 +177,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     }
 
     private void showNotification() {
+
         hideAll();
         notificationLayout.setVisibility(LinearLayout.VISIBLE);
         refreshItemsFromTable();
@@ -270,14 +277,14 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             //TODO userdata correct table name??
             mToDoTable = mClient.getTable("userdata", UserDataItem.class);
             mUserProfileTable = mClient.getTable("userlogindata", UserItem.class);
-            initLocalStore().get();
-            initLocalStoreUsers().get();
+            //initLocalStore().get();
+            //initLocalStoreUsers().get();
             mAdapter = new UserDataItemAdapter(this, R.layout.row_list_to_do);
             ListView listViewToDo = (ListView) findViewById(R.id.listViewToDo);
             listViewToDo.setAdapter(mAdapter);
 
             //addUserItem();
-            //addItem(66,99,2000,60,"shit creek",userId);
+
             //addTestItem();
 
         } catch (MalformedURLException e) {
