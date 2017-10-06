@@ -49,6 +49,7 @@ import com.microsoft.windowsazure.mobileservices.MobileServiceActivityResult;
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 import com.microsoft.windowsazure.mobileservices.http.OkHttpClientFactory;
 import com.microsoft.windowsazure.mobileservices.table.MobileServiceTable;
+import com.microsoft.windowsazure.mobileservices.table.query.QueryOrder;
 import com.microsoft.windowsazure.mobileservices.table.sync.MobileServiceSyncContext;
 import com.microsoft.windowsazure.mobileservices.table.sync.localstore.ColumnDataType;
 import com.microsoft.windowsazure.mobileservices.table.sync.localstore.MobileServiceLocalStoreException;
@@ -796,7 +797,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
     private List<UserDataItem> refreshItemsFromMobileServiceTable() throws ExecutionException, InterruptedException {
         // working - return mToDoTable.where().execute().get();
-        return mToDoTable.where().field("userId").eq(userId).execute().get();
+        return mToDoTable.where().field("userId").eq(userId).orderBy("createdAt", QueryOrder.Descending).execute().get();
         //return mToDoTable.where().field("complete").eq(val(false)).execute().get();
     }
 
