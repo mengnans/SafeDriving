@@ -13,6 +13,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -81,9 +82,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
- *
  * @author Daniel Gray, Mengnan Shi, Stanley Sim
- *
  */
 
 public class SafeDrivingHomeActivity extends AppCompatActivity {
@@ -119,6 +118,9 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     float[] accelerometerValues = new float[3];
     float[] magneticFieldValues = new float[3];
     private float currentIndex = -555;
+
+    private MediaPlayer music = null;
+
 
 
     private SpeedingInstance mSpeeding = null;
@@ -175,7 +177,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
         getSpeedButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                start(speedView,speedLimiView,directionView,streetNameView);
+                start(speedView, speedLimiView, directionView, streetNameView);
                 calculateOrientation(directionView);
                 Toast.makeText(getApplicationContext(), "start",
                         Toast.LENGTH_SHORT).show();
@@ -200,7 +202,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         sm.registerListener(myListener, aSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        sm.registerListener(myListener, mSensor,SensorManager.SENSOR_DELAY_NORMAL);
+        sm.registerListener(myListener, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
         super.onResume();
     }
 
@@ -210,24 +212,22 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_safe_driving_index);
 
-        Intent signInIntent = new Intent(getApplicationContext(),SignInActivity.class);
-        startActivityForResult(signInIntent,SIGNINCODE);
-
+        Intent signInIntent = new Intent(getApplicationContext(), SignInActivity.class);
+        startActivityForResult(signInIntent, SIGNINCODE);
 
 
         showContent();
-
 
 
     }
 
     public void showContent() {
 
-        sm = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+        sm = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         aSensor = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensor = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         sm.registerListener(myListener, aSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        sm.registerListener(myListener, mSensor,SensorManager.SENSOR_DELAY_NORMAL);
+        sm.registerListener(myListener, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
         dashboardLinearLayout = (LinearLayout) this.findViewById(R.id.dashboard_linear_layout);
         homeLinearLayout = (LinearLayout) this.findViewById(R.id.home_linear_layout);
@@ -319,8 +319,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     }
 
 
-
-    private void start(final TextView speedView,final TextView speedLimitView,final TextView directionView,final TextView streetNameView) {
+    private void start(final TextView speedView, final TextView speedLimitView, final TextView directionView, final TextView streetNameView) {
 
         /**show loading screen*/
         waitingLinearLayout.setVisibility(LinearLayout.VISIBLE);
@@ -366,16 +365,16 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                         }
 
                         /** if has speed limit*/
-                        if(speedLimit != -2){
+                        if (speedLimit != -2) {
                             /**if overspeed*/
-                            if(speed*3.6 > speedLimit){
+                            if (speed * 3.6 > speedLimit) {
                                 //TODO: generate warning data
-                                String warningMessage = "your speed is " + speed*3.6 + "km/h and speed limit is " + speedLimit + "km/h";
+                                String warningMessage = "your speed is " + speed * 3.6 + "km/h and speed limit is " + speedLimit + "km/h";
                                 Location warningLocation = oldLocation;
                                 String warningStreetName = currentStreetName;
 
-                                Log.e(LOG_TAG,"your speed is " + speed*3.6 + "km/h");
-                                Log.e(LOG_TAG,"speed limit is " + speedLimit + "km/h");
+                                Log.e(LOG_TAG, "your speed is " + speed * 3.6 + "km/h");
+                                Log.e(LOG_TAG, "speed limit is " + speedLimit + "km/h");
 
                                 //Create speeding Instance if null
                                 //get current time;
@@ -383,44 +382,45 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                                 Calendar c = Calendar.getInstance();
                                 SimpleDateFormat df = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
                                 String currentTime = df.format(c.getTime());
-                                if(mSpeeding == null){
+                                if (mSpeeding == null) {
                                     mSpeeding = new SpeedingInstance(currentTime, currentStreetName,
-                                            oldLocation.getLatitude(),oldLocation.getLongitude(),
-                                            speedLimit,speed*3.6);
-                                }else{
-                                    if(mSpeeding.updateData(currentStreetName,speedLimit,speed*3.6,currentTime)){
-                                        Log.i("SpeedingReport", "update speedingInstance at "+ currentTime);
+                                            oldLocation.getLatitude(), oldLocation.getLongitude(),
+                                            speedLimit, speed * 3.6);
+                                } else {
+                                    if (mSpeeding.updateData(currentStreetName, speedLimit, speed * 3.6, currentTime)) {
+                                        Log.i("SpeedingReport", "update speedingInstance at " + currentTime);
                                     }
                                     //if its not true -> either there is a change in street name or speed limit
-                                    else{
+                                    else {
 
-                                       addSpeedingItem();
+                                        addSpeedingItem();
 
 
                                         //Change to new Speeding Instance
                                         mSpeeding = new SpeedingInstance(currentTime, currentStreetName,
-                                                oldLocation.getLatitude(),oldLocation.getLongitude(),
-                                                speedLimit,speed*3.6);
+                                                oldLocation.getLatitude(), oldLocation.getLongitude(),
+                                                speedLimit, speed * 3.6);
                                     }
                                 }
 
 
-                            }else{
+                            } else {
 
                                 //if not exceeding speedLimit check speedInstance
-                                if(mSpeeding == null){
+                                if (mSpeeding == null) {
                                     //ignore if alr null
-                                }else{
+                                } else {
                                     addSpeedingItem();
                                     mSpeeding = null;
                                 }
                             }
                         }
+
+
                         /** from meter per second to km per hour */
                         if (getString(R.string.pref_km_per_hour_value).equals(unit_of_measurement)) {
                             speed *= 3.6;
                         }
-
 
 
                         /** set the location on map*/
@@ -433,8 +433,8 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
 
                         /** get speed limit */
-                        if(oldLocation !=null){
-                            getSpeedLimit(newLocation, oldLocation,speedLimitView,streetNameView);
+                        if (oldLocation != null) {
+                            getSpeedLimit(newLocation, oldLocation, speedLimitView, streetNameView);
                         }
 
 
@@ -488,8 +488,21 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
 
     }
+    /**
+     * play music
+     *
+     * @param MusicId
+     */
+    private void PlayMusic(int MusicId) {
+        music = MediaPlayer.create(this, MusicId);
+        music.start();
+    }
 
-    public void addSpeedingItem(){
+    public void addSpeedingItem() {
+
+        // play music
+        PlayMusic(R.raw.alarm);
+
         double lat = mSpeeding.getEstLat();
         double lng = mSpeeding.getEstLong();
         double maxSpeed = mSpeeding.getMaxSpeed();
@@ -500,7 +513,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         String startTime = mSpeeding.getStartTime();
 
         //Need to change the add item
-        addItem(lat,lng, maxSpeed,avgSpeed,prevSpeedLimit, prevStreetName,startTime,endTime, userId);
+        addItem(lat, lng, maxSpeed, avgSpeed, prevSpeedLimit, prevStreetName, startTime, endTime, userId);
     }
 
     private void createAndShowDialog(Exception exception, String title) {
@@ -545,12 +558,12 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             }
 
 
-            if(requestCode == SIGNINCODE){
+            if (requestCode == SIGNINCODE) {
 
                 String id = data.getStringExtra("userid");
                 String first_name = data.getStringExtra("first_name");
                 String last_name = data.getStringExtra("last_name");
-                addUserItem(id, first_name,last_name);
+                addUserItem(id, first_name, last_name);
                 userId = id;
             }
         }
@@ -653,11 +666,11 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     }
 
     //Adds user login information into Azure SQL table
-    public void addUserItem(String id, String first_name, String last_name){
+    public void addUserItem(String id, String first_name, String last_name) {
         if (mClient == null) {
             return;
         }
-        final UserItem item = new UserItem(id, first_name,last_name);
+        final UserItem item = new UserItem(id, first_name, last_name);
 
         AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
             @Override
@@ -721,6 +734,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         UserDataItem entity = mToDoTable.insert(item).get();
         return entity;
     }
+
     //add UserItem to Azure SQL table
     public UserItem addUserItemInTable(UserItem item) throws ExecutionException, InterruptedException {
         UserItem entity = mUserProfileTable.insert(item).get();
@@ -733,7 +747,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
      */
     private void refreshItemsFromTable() {
 
-        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>(){
+        AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
 
@@ -750,7 +764,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                             }
                         }
                     });
-                } catch (final Exception e){
+                } catch (final Exception e) {
                     createAndShowDialogFromTask(e, "Error");
                 }
 
@@ -772,13 +786,13 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         // Instantiate the RequestQueue.
         String url = "https://maps.googleapis.com/maps/api/directions/json?origin=";
         RequestQueue queue = Volley.newRequestQueue(this);
-        try{
-        url += "" + oldLocation.getLatitude();
-        url += "," + oldLocation.getLongitude() + "&destination=";
-        url += destinationPlace.getName() + "&key=" + getString(R.string.google_maps_key);
+        try {
+            url += "" + oldLocation.getLatitude();
+            url += "," + oldLocation.getLongitude() + "&destination=";
+            url += destinationPlace.getName() + "&key=" + getString(R.string.google_maps_key);
 //        url += "melbourne" + "&key=" + getString(R.string.google_maps_key);
-        }catch(Exception exception){
-            Toast.makeText(this,"You don't have a destination", Toast.LENGTH_SHORT);
+        } catch (Exception exception) {
+            Toast.makeText(this, "You don't have a destination", Toast.LENGTH_SHORT);
             return;
         }
         Log.i(LOG_TAG, "" + url);
@@ -801,11 +815,11 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         queue.add(stringRequest);
     }
 
-    public void getSpeedLimit(final Location currentLocation, Location oldLocation, final TextView speedLimitView, final TextView streetNameView){
+    public void getSpeedLimit(final Location currentLocation, Location oldLocation, final TextView speedLimitView, final TextView streetNameView) {
         double lowLng = currentLocation.getLongitude();
         double lowLat = currentLocation.getLatitude();
-        String url ="http://maps.google.com/maps/api/geocode/json?latlng="
-                +lowLat+","+lowLng + "&sensor=false";
+        String url = "http://maps.google.com/maps/api/geocode/json?latlng="
+                + lowLat + "," + lowLng + "&sensor=false";
         RequestQueue queue = Volley.newRequestQueue(this);
         Log.i(LOG_TAG, "" + url);
         // Request a string response from the provided URL.
@@ -821,7 +835,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                             JsonObject results = object.getAsJsonArray("results").get(0).getAsJsonObject();
                             JsonObject route = results.getAsJsonArray("address_components").get(1).getAsJsonObject();
                             String long_name = route.get("long_name").toString();
-                            long_name = long_name.substring(1,long_name.length()-1);
+                            long_name = long_name.substring(1, long_name.length() - 1);
                             currentStreetName = long_name;
                             streetNameView.setText("You are on the " + currentStreetName);
 
@@ -842,25 +856,25 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         queue.add(stringRequest);
         double maxLng = oldLocation.getLongitude();
         double maxLat = oldLocation.getLatitude();
-        if(lowLat > maxLat){
+        if (lowLat > maxLat) {
             double temp = lowLat;
             lowLat = maxLat;
             maxLat = temp;
         }
-        if(lowLng > maxLng){
+        if (lowLng > maxLng) {
             double temp = lowLng;
             lowLng = maxLng;
             maxLng = temp;
         }
 
         url = "http://www.overpass-api.de/api/xapi?*[maxspeed=*][bbox=";
-        try{
+        try {
             url += "" + lowLng;
             url += "," + lowLat;
             url += "," + maxLng;
             url += "," + maxLat + "]";
-        }catch(Exception exception){
-            Toast.makeText(this,"url error", Toast.LENGTH_SHORT);
+        } catch (Exception exception) {
+            Toast.makeText(this, "url error", Toast.LENGTH_SHORT);
         }
         Log.i(LOG_TAG, "" + url);
 
@@ -894,17 +908,17 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                                     String k = eElement.getAttribute("k");
                                     String v = eElement.getAttribute("v");
 
-                                    if("name".equals(k)){
+                                    if ("name".equals(k)) {
                                         String name = v;
-                                        if(currentStreetName != null){
-                                            if(!currentStreetName.equals(name)){
-                                                Log.e(LOG_TAG,"name" + name);
-                                                Log.e(LOG_TAG,"currentStreetName" + currentStreetName);
+                                        if (currentStreetName != null) {
+                                            if (!currentStreetName.equals(name)) {
+                                                Log.e(LOG_TAG, "name" + name);
+                                                Log.e(LOG_TAG, "currentStreetName" + currentStreetName);
                                                 break;
                                             }
                                         }
-                                        Log.e(LOG_TAG,"correctName" + name);
-                                        Log.e(LOG_TAG,"currentStreetName" + currentStreetName);
+                                        Log.e(LOG_TAG, "correctName" + name);
+                                        Log.e(LOG_TAG, "currentStreetName" + currentStreetName);
                                         v = previousOne.getAttribute("v");
                                         String speedString = v;
                                         double speed = Double.parseDouble(speedString);
@@ -922,7 +936,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                                         speedString = getNumberString(speed);
                                         speedLimitView.setText("The speed limit is " + speedString + "" + unit_of_measurement);
 
-                                    break;
+                                        break;
                                     }
 
                                     previousOne = eElement;
@@ -938,7 +952,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e(LOG_TAG, "error speed limit response");
-                if(error != null) {
+                if (error != null) {
                     Log.e(LOG_TAG, " " + error.getMessage());
                 }
             }
@@ -948,7 +962,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
     }
 
-    public String getNumberString(double speed){
+    public String getNumberString(double speed) {
         DecimalFormat df = new DecimalFormat("######0.00");
         return df.format(speed);
     }
@@ -960,13 +974,15 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
                 accelerometerValues = sensorEvent.values;
             TextView textView = (TextView) findViewById(R.id.textView_dashboard_direction);
-            if(textView == null){
+            if (textView == null) {
                 // do nothing
-            }else{
+            } else {
                 calculateOrientation(textView);
             }
         }
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        }
     };
 
     private void calculateOrientation(final TextView directionView) {
@@ -976,81 +992,70 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         SensorManager.getOrientation(R, values);
         values[0] = (float) Math.toDegrees(values[0]);
         float newIndex = values[0];
-        if(currentIndex == -555){
+        if (currentIndex == -555) {
             currentIndex = newIndex;
-        }else{
+        } else {
             float difference = newIndex - currentIndex;
             currentIndex = newIndex;
-            if(difference < 0){
+            if (difference < 0) {
                 difference = -difference;
             }
-            Log.e(LOG_TAG,"" + difference);
-            if(difference >= 30){
-                if(oldLocation != null){
+            Log.e(LOG_TAG, "" + difference);
+            if (difference >= 30) {
+                if (oldLocation != null) {
                     // TODO: generate warning data
                     String warningMessage = "turning too fast";
                     Location warningLocation = oldLocation;
                     String warningStreetName = currentStreetName;
                     // e.g turning too fast at -37.804571, 144.958612
-                    Log.e(LOG_TAG,warningMessage + "at " + warningLocation.getLatitude() + "," + warningLocation.getLongitude());
+                    Log.e(LOG_TAG, warningMessage + "at " + warningLocation.getLatitude() + "," + warningLocation.getLongitude());
                 }
-
 
 
             }
         }
-        Log.i(LOG_TAG, values[0]+"");
+        Log.i(LOG_TAG, values[0] + "");
 
         //values[1] = (float) Math.toDegrees(values[1]);
         //values[2] = (float) Math.toDegrees(values[2]);
         String direction = "";
-        if(values[0] >= -5 && values[0] < 5){
+        if (values[0] >= -5 && values[0] < 5) {
             Log.v(LOG_TAG, "North");
             direction = "North";
-        }
-        else if(values[0] >= 5 && values[0] < 85){
+        } else if (values[0] >= 5 && values[0] < 85) {
             Log.v(LOG_TAG, "North East");
             direction = "North East";
-        }
-        else if(values[0] >= 85 && values[0] <=95){
+        } else if (values[0] >= 85 && values[0] <= 95) {
             Log.v(LOG_TAG, "East");
             direction = "East";
-        }
-        else if(values[0] >= 95 && values[0] <175){
+        } else if (values[0] >= 95 && values[0] < 175) {
             Log.v(LOG_TAG, "South East");
             direction = "South East";
-        }
-        else if((values[0] >= 175 && values[0] <= 180) || (values[0]) >= -180 && values[0] < -175){
+        } else if ((values[0] >= 175 && values[0] <= 180) || (values[0]) >= -180 && values[0] < -175) {
             Log.v(LOG_TAG, "South");
             direction = "South";
-        }
-        else if(values[0] >= -175 && values[0] <-95){
+        } else if (values[0] >= -175 && values[0] < -95) {
             Log.v(LOG_TAG, "South West");
             direction = "South West";
-        }
-        else if(values[0] >= -95 && values[0] < -85){
+        } else if (values[0] >= -95 && values[0] < -85) {
             Log.v(LOG_TAG, "West");
             direction = "West";
-        }
-        else if(values[0] >= -85 && values[0] <-5){
+        } else if (values[0] >= -85 && values[0] < -5) {
             Log.v(LOG_TAG, "North West");
             direction = "North West";
         }
 
-        if("".equals(currentDirection)){
+        if ("".equals(currentDirection)) {
             currentDirection = direction;
-        }else if(currentDirection.equals(direction)){
+        } else if (currentDirection.equals(direction)) {
             // do nothing
-        }else{
+        } else {
             currentDirection = direction;
             directionView.setText("Your direction is " + direction);
         }
 
 
-
     }
-
-
 
 
 }

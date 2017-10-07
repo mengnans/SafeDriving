@@ -131,6 +131,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
             if (hasPoints) {
+
+                Log.i(LOG_TAG,"start drawing");
                 LatLngBounds.Builder builder = new LatLngBounds.Builder();
                 builder.include(new LatLng(maxLat, maxLon));
                 builder.include(new LatLng(minLat, minLon));
