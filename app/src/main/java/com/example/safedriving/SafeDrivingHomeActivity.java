@@ -66,6 +66,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,6 +119,9 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     float[] accelerometerValues = new float[3];
     float[] magneticFieldValues = new float[3];
     private float currentIndex = -555;
+
+
+    private SpeedingInstance mSpeeding = null;
 
     //private String userId = "104369404011449547684";
     private String userId = "0";
@@ -208,9 +213,9 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
         Intent signInIntent = new Intent(getApplicationContext(),SignInActivity.class);
         startActivityForResult(signInIntent,SIGNINCODE);
 
-        showContent();
 
-        //authenticate();
+
+        showContent();
 
 
 
@@ -372,7 +377,43 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                                 Log.e(LOG_TAG,"your speed is " + speed*3.6 + "km/h");
                                 Log.e(LOG_TAG,"speed limit is " + speedLimit + "km/h");
 
-                                addItem(oldLocation.getLatitude(),oldLocation.getLongitude(), speed, speedLimit, currentStreetName, userId);
+                                //Create speeding Instance if null
+                                //get current time;
+
+                                Calendar c = Calendar.getInstance();
+                                SimpleDateFormat df = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss");
+                                String currentTime = df.format(c.getTime());
+                                if(mSpeeding == null){
+                                    mSpeeding = new SpeedingInstance(currentTime, currentStreetName,
+                                            oldLocation.getLatitude(),oldLocation.getLongitude(),
+                                            speedLimit,speed*3.6);
+                                }else{
+                                    if(mSpeeding.updateData(currentStreetName,speedLimit,speed*3.6,currentTime)){
+                                        Log.i("SpeedingReport", "update speedingInstance at "+ currentTime);
+                                    }
+                                    //if its not true -> either there is a change in street name or speed limit
+                                    else{
+
+                                       addSpeedingItem();
+
+
+                                        //Change to new Speeding Instance
+                                        mSpeeding = new SpeedingInstance(currentTime, currentStreetName,
+                                                oldLocation.getLatitude(),oldLocation.getLongitude(),
+                                                speedLimit,speed*3.6);
+                                    }
+                                }
+
+
+                            }else{
+
+                                //if not exceeding speedLimit check speedInstance
+                                if(mSpeeding == null){
+                                    //ignore if alr null
+                                }else{
+                                    addSpeedingItem();
+                                    mSpeeding = null;
+                                }
                             }
                         }
                         /** from meter per second to km per hour */
@@ -448,6 +489,20 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
     }
 
+    public void addSpeedingItem(){
+        double lat = mSpeeding.getEstLat();
+        double lng = mSpeeding.getEstLong();
+        double maxSpeed = mSpeeding.getMaxSpeed();
+        double avgSpeed = mSpeeding.getAvgSpeed();
+        double prevSpeedLimit = mSpeeding.getSpeedLimit();
+        String prevStreetName = mSpeeding.getStreet();
+        String endTime = mSpeeding.getEndTime();
+        String startTime = mSpeeding.getStartTime();
+
+        //Need to change the add item
+        addItem(lat,lng, maxSpeed,avgSpeed,prevSpeedLimit, prevStreetName,startTime,endTime, userId);
+    }
+
     private void createAndShowDialog(Exception exception, String title) {
         Throwable ex = exception;
         if (exception.getCause() != null) {
@@ -480,7 +535,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                 if (result.isLoggedIn()) {
                     // login succeeded
                     createAndShowDialog(String.format("You are now logged in - %1$2s", mClient.getCurrentUser().getUserId()), "Success");
-//                    showContent();
+
 
                 } else {
                     // login failed, check the error message
@@ -491,6 +546,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
 
             if(requestCode == SIGNINCODE){
+
                 String id = data.getStringExtra("userid");
                 String first_name = data.getStringExtra("first_name");
                 String last_name = data.getStringExtra("last_name");
@@ -618,7 +674,9 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     }
 
     //Add particular speeding instance as a row into Azure SQL table
-    public void addItem(double lat, double longitude, double speed, double slimit, String street, String userid) {
+    public void addItem(double lat, double longitude, double maxspeed,
+                        double avgSpeed, double slimit, String street,
+                        String startTime, String endTime, String userid) {
         if (mClient == null) {
             return;
         }
@@ -628,7 +686,10 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
 
         item.setLat(lat);
         item.setLimit(slimit);
-        item.setSpeed(speed);
+        item.setSpeed(maxspeed);
+        item.setAvgSpeed(avgSpeed);
+        item.setStartTime(startTime);
+        item.setEndTime(endTime);
         item.setLong(longitude);
         item.setmStreet(street);
         item.setUserId(userid);

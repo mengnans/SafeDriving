@@ -34,6 +34,18 @@ public class UserDataItem {
     @com.google.gson.annotations.SerializedName("mSpeedStr")
     private String mSpeedString;
 
+    @com.google.gson.annotations.SerializedName("mAvgSpeed")
+    private double mAvgSpeed;
+    @com.google.gson.annotations.SerializedName("mAvgSpeedStr")
+    private String mAvgSpeedString;
+
+    @com.google.gson.annotations.SerializedName("mStartTime")
+    private String startTime;
+
+    @com.google.gson.annotations.SerializedName("mEndTime")
+    private String endTime;
+
+
     @com.google.gson.annotations.SerializedName("mLimit")
     private double mLimit;
     @com.google.gson.annotations.SerializedName("mLimitStr")
@@ -93,6 +105,35 @@ public class UserDataItem {
     public void setLong(double longitude) {
         mLong = longitude;
         mLongString = Double.toString(longitude);
+    }
+
+    public void setAvgSpeed(double avgSpeed){
+        mAvgSpeed = avgSpeed;
+        mAvgSpeedString = Double.toString(avgSpeed);
+    }
+
+    public double getAvgSpeed(){
+        return this.mAvgSpeed;
+    }
+
+    public String getmAvgSpeedString(){
+        return this.mAvgSpeedString;
+    }
+
+    public void setStartTime(String startTime){
+        this.startTime = startTime;
+    }
+
+    public String getStartTime(){
+        return this.startTime;
+    }
+
+    public void setEndTime(String endTime){
+        this.endTime = endTime;
+    }
+
+    public String getEndTime(){
+        return this.endTime;
     }
 
     public void setmStreet(String mStreet) {
