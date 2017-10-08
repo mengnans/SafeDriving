@@ -95,6 +95,7 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
     private LinearLayout homeLinearLayout;
     private LinearLayout waitingLinearLayout;
     private LinearLayout notificationLayout;
+    private static long lastWarningTime = -2;
 
     private final static int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 200;
     private SharedPreferences sharedPreferences;
@@ -373,6 +374,18 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
                                 Location warningLocation = oldLocation;
                                 String warningStreetName = currentStreetName;
 
+                                long timeMillis = System.currentTimeMillis();
+                                if(lastWarningTime == -2){
+                                    lastWarningTime = timeMillis;
+                                    // play warning
+                                    PlayMusic(R.raw.speeding_warning);
+                                }else if((timeMillis - lastWarningTime)> 3500){
+                                    // play warning
+                                    lastWarningTime = timeMillis;
+                                    PlayMusic(R.raw.speeding_warning);
+                                }
+
+
                                 Log.e(LOG_TAG, "your speed is " + speed * 3.6 + "km/h");
                                 Log.e(LOG_TAG, "speed limit is " + speedLimit + "km/h");
 
@@ -494,14 +507,17 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
      * @param MusicId
      */
     private void PlayMusic(int MusicId) {
+        if(MusicId == -2){
+            Log.i(LOG_TAG,"turning_warning");
+            MusicId = R.raw.turning_warning;
+        }
         music = MediaPlayer.create(this, MusicId);
         music.start();
     }
 
     public void addSpeedingItem() {
 
-        // play music
-        PlayMusic(R.raw.alarm);
+
 
         double lat = mSpeeding.getEstLat();
         double lng = mSpeeding.getEstLong();
@@ -1000,14 +1016,24 @@ public class SafeDrivingHomeActivity extends AppCompatActivity {
             if (difference < 0) {
                 difference = -difference;
             }
-            Log.e(LOG_TAG, "" + difference);
             if (difference >= 30) {
                 if (oldLocation != null) {
                     // TODO: generate warning data
-                    String warningMessage = "turning too fast";
+                    Log.e("Stone","Stone");
+                    String warningMessage = "turning_warning too fast";
                     Location warningLocation = oldLocation;
                     String warningStreetName = currentStreetName;
-                    // e.g turning too fast at -37.804571, 144.958612
+                    long currentTime = System.currentTimeMillis();
+                    if(lastWarningTime == -2){
+                        lastWarningTime = currentTime;
+                        // play warning
+                        PlayMusic(-2);
+                    }else if((currentTime - lastWarningTime)> 3500){
+                        // play warning
+                        lastWarningTime = currentTime;
+                        PlayMusic(-2);
+                    }
+                    // e.g turning_warning too fast at -37.804571, 144.958612
                     Log.e(LOG_TAG, warningMessage + "at " + warningLocation.getLatitude() + "," + warningLocation.getLongitude());
                 }
 
